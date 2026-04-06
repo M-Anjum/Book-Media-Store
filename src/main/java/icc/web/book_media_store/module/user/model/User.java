@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import icc.web.book_media_store.module.user.model.role.Role;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,12 +27,24 @@ public class User {
  
     @Column(nullable = false)
     private String lastName;
+
+    @Column(nullable = false, unique = true)
+    private String username; 
  
     @Column(nullable = false, unique = true)
     private String email;
  
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private LocalDate birthDate; // date de naissance
+
+    @Column(nullable = false)
+    private String address; // adresse postale
+
+    @Column(nullable = false, length = 10)
+    private String postalCode; // code postal
  
     private String phone;
  
