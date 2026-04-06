@@ -1,0 +1,66 @@
+.page {
+	min-height: 100vh;
+	background: #ececec;
+	color: #333;
+	padding-bottom: 2rem;
+}
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 1.75rem 1.25rem 2.5rem;
+}
+
+.title {
+	margin: 0 0 1.25rem;
+	font-size: 1.85rem;
+	font-weight: 700;
+	color: #2a2a2a;
+}
+
+.searchBar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	margin-bottom: 1.75rem;
+	align-items: center;
+}
+
+.searchBar input {
+	flex: 1;
+	min-width: 220px;
+	max-width: 440px;
+	padding: 0.6rem 0.85rem;
+	font-size: 0.95rem;
+	color: #333;
+	background: #fff;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	outline: none;
+}
+
+.searchBar input:focus {
+	border-color: #e65c00;
+	box-shadow: 0 0 0 2px rgba(230, 92, 0, 0.15);
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 1.5rem;
+	align-items: stretch;
+}
+
+.message {
+	padding: 1rem 1.15rem;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	color: #555;
+}
+
+.error {
+	color: #b00020;
+	border-color: #f0c4c4;
+	background: #fff5f5;
+}
