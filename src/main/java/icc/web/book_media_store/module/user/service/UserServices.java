@@ -1,0 +1,125 @@
+package icc.web.book_media_store.module.user.service;
+
+import icc.web.book_media_store.infrastructure.error.BusinessException;
+import icc.web.book_media_store.infrastructure.error.ErrorCode;
+import icc.web.book_media_store.module.user.dto.ChangePasswordRequest;
+import icc.web.book_media_store.module.user.dto.UpdateProfileRequest;
+import icc.web.book_media_store.module.user.dto.UserProfileResponse;
+import icc.web.book_media_store.module.user.dto.mapper.UserMapper;
+import icc.web.book_media_store.module.user.model.User;
+import icc.web.book_media_store.module.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+ 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+ 
+@Service
+@RequiredArgsConstructor
+public class UserServices {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper; // ← injecté automatiquement par Spring
+
+    public UserProfileResponse getProfile(String email) {
+        return userMapper.toResponse(findByEmail(email));
+    }
+
+    @Transactional
+    public UserProfileResponse updateProfile(String email, UpdateProfileRequest request) {
+        User user = findByEmail(email);
+
+        if (!user.getEmail().equals(request.email()) &&
+                userRepository.existsByEmail(request.email())) {
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        userMapper.updateAppUser(request, user); // ← MapStruct fait le mapping
+        return userMapper.toResponse(userRepository.save(user));
+    }
+ 
+    // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────
+ 
+    @Transactional
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = findByEmail(email);
+ 
+        // Verify the current password matches what is stored
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INCORRECT_PASSWORD);
+        }
+ 
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+    }
+ 
+    // ─── UPLOAD AVATAR ────────────────────────────────────────────────────────
+ 
+    @Transactional
+    public String uploadAvatar(String email, MultipartFile file) {
+        User user = findByEmail(email);
+ 
+        // Validate file type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+ 
+        try {
+            // Create upload directory if it doesn't exist
+            Path uploadPath = Paths.get("uploads/avatars");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+ 
+            // Generate a unique filename to avoid collisions
+            String extension = getFileExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + "." + extension;
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath);
+ 
+            // Build the public URL and save it on the user
+            String avatarUrl = "/uploads/avatars/" + filename;
+            user.setAvatarUrl(avatarUrl);
+            userRepository.save(user);
+ 
+            return avatarUrl;
+ 
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+ 
+    // ─── HELPERS ──────────────────────────────────────────────────────────────
+ 
+    private User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+    }
+ 
+    private UserProfileResponse toResponse(User user) {
+        return new UserProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAvatarUrl(),
+                user.getRole().name(),
+                user.getCreatedAt(),
+                user.getUpdatedAt());
+    }
+ 
+    private String getFileExtension(String filename) {
+        if (filename == null || !filename.contains(".")) return "jpg";
+        return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+    }
+}
