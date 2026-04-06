@@ -1,8 +1,6 @@
 package icc.web.book_media_store.module.user.dto;
  
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
  
 public record UpdateProfileRequest(
  
@@ -19,5 +17,11 @@ public record UpdateProfileRequest(
         String email,
  
         @Size(max = 20, message = "Phone number must not exceed 20 characters")
-        String phone) {
+        String phone,
+        @NotBlank(message = "L'adresse est obligatoire")
+        String address,
+
+        @NotBlank(message = "Le code postal est obligatoire")
+        @Pattern(regexp = "\\d{4,10}", message = "Code postal invalide")
+        String postalCode) {
 }
