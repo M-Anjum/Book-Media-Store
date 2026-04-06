@@ -30,7 +30,9 @@ public class SpringSecurityConfig {
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/user/register").permitAll()
                                                 .requestMatchers("/error").permitAll()
-
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/error").permitAll()
+                                                
                                                 // 2. Blog: Lecture publique
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/api/blog/articles",
