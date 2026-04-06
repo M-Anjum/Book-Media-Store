@@ -1,0 +1,98 @@
+.archiveContainer {
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1rem;
+}
+
+.title {
+    color: #475569;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.count {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.tableWrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.archiveTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.archiveTable th {
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.row {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.2s;
+}
+
+.row:hover {
+    background: #f8fafc;
+}
+
+.row td {
+    padding: 1.2rem 1rem;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+.orderNum {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.amount {
+    font-weight: 700;
+    color: #475569;
+}
+
+.statusBadge {
+    background: #e2e8f0;
+    color: #64748b;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.auditInfo {
+    font-style: italic;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.empty {
+    text-align: center;
+    padding: 4rem;
+    color: #94a3b8;
+}
+
+.loader {
+    text-align: center;
+    padding: 5rem;
+    color: #64748b;
+    font-weight: 500;
+}

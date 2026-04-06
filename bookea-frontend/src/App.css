@@ -1,0 +1,65 @@
+/* src/App.css */
+
+:root {
+  --bookea-orange: #E8520A;
+  --bookea-orange-hover: #C94409;
+  --bookea-orange-light: #FDE8DF;
+  --bookea-black: #111111;
+  --bookea-white: #FFFFFF;
+  --bookea-bg: #F5F5F0;
+  --bookea-text: #333333;
+  --bookea-text-muted: #666666;
+  --bookea-border: #E5E5E5;
+  --bookea-success-bg: #EAF3DE;
+  --bookea-success-text: #3B6D11;
+  --bookea-error-bg: #FCEBEB;
+  --bookea-error-text: #A32D2D;
+  --bookea-badge-new: #2D6A4F;
+  --bookea-badge-promo: #E63946;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bookea-bg);
+  color: var(--bookea-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  /* On garde le display block pour annuler le centrage de Vite */
+  display: block !important;
+}
+
+#root {
+  width: 100%;
+}
+
+/* Layout pour le Sticky Footer */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px; /* On centre le contenu pour un look plus "Book" */
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* On définit les liens par défaut avec l'orange Bookea */
+a {
+  color: var(--bookea-orange);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--bookea-orange-hover);
+}

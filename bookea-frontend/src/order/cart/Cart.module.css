@@ -1,0 +1,72 @@
+.container {
+    max-width: 1000px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+}
+
+.productType {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.controls input {
+    width: 50px;
+    padding: 0.3rem;
+    border: 1px solid #cbd5e1;
+}
+
+.summary {
+    background: #f8fafc;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    height: fit-content;
+}
+
+.total {
+    font-size: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.total span {
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.checkoutBtn {
+    width: 100%;
+    padding: 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.empty {
+    text-align: center;
+    padding: 5rem;
+    color: #64748b;
+}

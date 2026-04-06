@@ -5,18 +5,22 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Getter
-@Setter
+@Table(name = "order_items")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product; // On pointe vers la classe mère !
+
     private Integer quantity;
-    private BigDecimal priceAtPurchase;
+    private BigDecimal priceAtPurchase; // On fige le prix au moment de la commande
 
     @ManyToOne
     @JoinColumn(name = "order_id")
