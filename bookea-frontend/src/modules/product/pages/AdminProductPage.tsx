@@ -1,58 +1,77 @@
-import React, { useState } from "react";
-import ProductForm from "../components/ProductForm";
-import ProductList from "../components/ProductList";
-import styles from "./AdminProductPage.module.css";
+import React, { useState } from 'react';
+import ProductForm from '../components/ProductForm';
+import ProductList from '../components/ProductList';
+import { ProductResponse } from '../type/product';
 
 const AdminProductPage: React.FC = () => {
-  // État pour gérer la vue active (Catalogue ou Ajout)
-  const [activeTab, setActiveTab] = useState<"LIST" | "ADD">("LIST");
+    // 1. Logique d'état (Ajout de 'EDIT')
+    const [activeTab, setActiveTab] = useState<'LIST' | 'ADD' | 'EDIT'>('LIST');
+    const [productToEdit, setProductToEdit] = useState<ProductResponse | null>(null);
 
-  return (
-    <div className={styles.adminWrapper}>
-      <div className={styles.container}>
-        {/* En-tête du Tableau de Bord */}
-        <header className={styles.header}>
-          <h1 className={styles.title}>
-            Tableau de bord <span className={styles.accent}>Admin</span>
-          </h1>
-          <p className={styles.subtitle}>
-            Gestion centralisée du catalogue Bookea Store.
-          </p>
-        </header>
+    // 2. Fonctions de gestion
+    const handleEditClick = (product: ProductResponse) => {
+        setProductToEdit(product);
+        setActiveTab('EDIT');
+    };
 
-        {/* Barre de Navigation des Onglets */}
-        <div className={styles.tabsWrapper}>
-          <div className={styles.tabsBackground}>
-            <button
-              onClick={() => setActiveTab("LIST")}
-              className={`${styles.tabButton} ${activeTab === "LIST" ? styles.activeTab : ""}`}
-            >
-              <span className={styles.icon}>📋</span> Catalogue
-            </button>
-            <button
-              onClick={() => setActiveTab("ADD")}
-              className={`${styles.tabButton} ${activeTab === "ADD" ? styles.activeTab : ""}`}
-            >
-              <span className={styles.icon}>➕</span> Ajouter un produit
-            </button>
-          </div>
-        </div>
+    const handleSuccess = () => {
+        setActiveTab('LIST');
+        setProductToEdit(null);
+    };
 
-        {/* Zone de contenu dynamique */}
-        <div className={styles.contentArea}>
-          {activeTab === "LIST" ? (
-            <div className={styles.fadeIn}>
-              <ProductList />
+    return (
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+                
+                {/* En-tête du Tableau de Bord */}
+                <div className="text-center">
+                    <h1 className="text-3xl font-extrabold text-gray-900 uppercase tracking-tight">
+                        Tableau de bord Admin
+                    </h1>
+                    <p className="mt-2 text-sm text-gray-600">
+                        Gérez votre catalogue Bookea Store facilement.
+                    </p>
+                </div>
+
+                {/* Les Onglets (Tabs) */}
+                <div className="flex justify-center mb-6">
+                    <div className="inline-flex bg-gray-200 rounded-lg p-1 shadow-inner">
+                        <button 
+                            onClick={() => { setActiveTab('LIST'); setProductToEdit(null); }}
+                            className={`py-2 px-6 rounded-md text-sm font-bold transition-all ${activeTab === 'LIST' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            📋 Catalogue
+                        </button>
+                        <button 
+                            onClick={() => { setActiveTab('ADD'); setProductToEdit(null); }}
+                            className={`py-2 px-6 rounded-md text-sm font-bold transition-all ${activeTab === 'ADD' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            ➕ Ajouter un produit
+                        </button>
+                        {/* Nouvel onglet qui n'apparaît qu'en mode édition */}
+                        {activeTab === 'EDIT' && (
+                            <button className="py-2 px-6 rounded-md text-sm font-bold transition-all bg-white text-orange-600 shadow-sm">
+                                ✏️ Modification
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Affichage Conditionnel */}
+                <div className="transition-all duration-300">
+                    {activeTab === 'LIST' && <ProductList onEdit={handleEditClick} />}
+                    
+                    {(activeTab === 'ADD' || activeTab === 'EDIT') && (
+                        <ProductForm 
+                            initialData={productToEdit} 
+                            onSuccess={handleSuccess} 
+                        />
+                    )}
+                </div>
+                
             </div>
-          ) : (
-            <div className={styles.fadeIn}>
-              <ProductForm />
-            </div>
-          )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default AdminProductPage;
