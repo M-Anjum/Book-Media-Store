@@ -1,6 +1,5 @@
 package icc.web.book_media_store.infrastructure.security;
 
-
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +22,8 @@ public class SpringSecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 return http
-                                // Utilise la configuration définie dans WebConfig.java
                                 .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf.disable()) // Désactivé pour le dev API, à sécuriser en prod
 
                                 // Désactivé pour faciliter le développement de l'API
                                 .csrf(csrf -> csrf.disable())
@@ -37,22 +36,30 @@ public class SpringSecurityConfig {
                                                                 "/api/blog/articles/*/comments")
                                                                 .permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/api/blog/images/*").permitAll()
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/user/register").permitAll() 
                                                 .requestMatchers("/error").permitAll()
-                                                .anyRequest().authenticated())
+                                                .anyRequest().permitAll())
 
-                                // Login silencieux (Statut 200 uniquement, pas de texte)
                                 .formLogin(form -> form
                                                 .loginProcessingUrl("/api/auth/login")
-                                                .successHandler((req, res, auth) -> res
-                                                                .setStatus(HttpServletResponse.SC_OK))
+                                                .successHandler((req, res, auth) -> {
+                                                        res.setStatus(HttpServletResponse.SC_OK);
+                                                        res.setContentType("application/json");
+                                                        // PRO TIP : On renvoie un petit JSON pour dire au Front que
+                                                        // c'est ok
+                                                        res.getWriter().write(
+                                                                        "{\"message\": \"Connexion réussie\", \"user\": \""
+                                                                                        + auth.getName() + "\"}");
+                                                })
                                                 .failureHandler((req, res, exc) -> {
                                                         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                                         res.setContentType("application/json");
                                                         res.getWriter().write(
-                                                                        "{\"error\": \"Authentification echouee\"}");
+                                                                        "{\"error\": \"Identifiants invalides\"}");
                                                 }))
 
-                                // Logout propre
                                 .logout(logout -> logout
                                                 .logoutUrl("/api/auth/logout")
                                                 .logoutSuccessHandler((req, res, auth) -> res
@@ -69,7 +76,6 @@ public class SpringSecurityConfig {
 
         @Bean
         public PasswordEncoder passwordEncoder() {
-                // BCrypt avec un facteur de force de 12
                 return new BCryptPasswordEncoder(12);
         }
 }

@@ -1,0 +1,153 @@
+.homeContainer {
+    padding-bottom: 4rem;
+}
+
+/* Hero Section style Streaming */
+.hero {
+    height: 400px;
+    background: linear-gradient(to right, rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.2)),
+                url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070') center/cover;
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+    margin-bottom: 2rem;
+}
+
+.heroContent h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.heroContent p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    color: #e5e5e5;
+}
+
+/* Grille et Cartes */
+.productSection {
+    padding: 0 5%;
+}
+
+.title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #e5e5e5;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: #1f1f1f; /* Gris Netflix */
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.imageBox {
+    height: 150px;
+    background: #2f2f2f;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.imageBox img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.typeBadge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+}
+
+/* Couleurs par type */
+.book { background: #e50914; color: white; }      /* Rouge Netflix */
+.computer { background: #0071eb; color: white; }  /* Bleu Tech */
+.hifi { background: #00a8e1; color: white; }      /* Cyan */
+
+.info {
+    padding: 1rem;
+}
+
+.info h3 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.description {
+    font-size: 0.8rem;
+    color: #a3a3a3;
+    height: 40px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.footerCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.addBtn {
+    background: white;
+    color: black;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.addBtn:hover {
+    background: #e5e5e5;
+}
+
+.addBtn:disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e50914;
+}
