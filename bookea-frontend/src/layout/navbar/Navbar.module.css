@@ -61,6 +61,33 @@
 }
 
 /* Bouton Panier */
+.cartButton {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background-color: #fff;
+  border: 1.5px solid #E8520A;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #E8520A;
+  font-weight: 700;
+  transition: padding 0.25s ease, gap 0.25s ease, background 0.2s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cartButton:hover {
+  background-color: #FDE8DF;
+  padding: 0.6rem 1.2rem;
+  gap: 0.6rem;
+}
+
+.cartButton:hover .cartText {
+  max-width: 60px;
+  opacity: 1;
+}
+
 .authLink {
   font-size: 14px;
   color: #E8520A;
@@ -102,27 +129,9 @@
   gap: 12px;
 }
 
-.cartButton {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background-color: #E8520A;
-  padding: 0.6rem 0.75rem;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-  font-weight: 700;
-  transition: padding 0.25s ease, gap 0.25s ease, background 0.2s;
-  overflow: hidden;
-  white-space: nowrap;
-  width: auto;
-}
 
-.cartButton:hover {
-  background-color: #C94409;
-  padding: 0.6rem 1.2rem;
-  gap: 0.6rem;
-}
+
+
 
 .cartIcon {
   font-size: 1.1rem;
@@ -137,7 +146,3 @@
   transition: max-width 0.25s ease, opacity 0.2s ease;
 }
 
-.cartButton:hover .cartText {
-  max-width: 60px;
-  opacity: 1;
-}
