@@ -2,15 +2,14 @@ package icc.web.book_media_store.module.user.controller;
  
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import icc.web.book_media_store.module.user.dto.ChangePasswordRequest;
-import icc.web.book_media_store.module.user.dto.UpdateProfileRequest;
-import icc.web.book_media_store.module.user.dto.UserProfileResponse;
+import icc.web.book_media_store.module.user.dto.*;
 import icc.web.book_media_store.module.user.service.UserServices;
 
 
@@ -23,6 +22,14 @@ public class UserController {
  
     private final UserServices userService;
  
+    // POST /api/user/register  →  inscription
+    @PostMapping("/register")
+    public ResponseEntity<UserProfileResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.register(request));
+    }
+    
     // GET /api/user/profile  →  returns the profile of the logged-in user
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponse> getProfile(

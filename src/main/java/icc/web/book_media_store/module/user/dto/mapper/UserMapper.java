@@ -1,5 +1,6 @@
 package icc.web.book_media_store.module.user.dto.mapper;
 
+import icc.web.book_media_store.module.user.dto.RegisterRequest;
 import icc.web.book_media_store.module.user.dto.UserProfileResponse;
 import icc.web.book_media_store.module.user.dto.UpdateProfileRequest;
 import icc.web.book_media_store.module.user.model.User;
@@ -21,5 +22,15 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "birthDate", ignore = true)
+    @Mapping(target = "username", ignore = true)
     void updateAppUser(UpdateProfileRequest request, @MappingTarget User user);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "avatarUrl", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    User toEntity(RegisterRequest request);
+
 }

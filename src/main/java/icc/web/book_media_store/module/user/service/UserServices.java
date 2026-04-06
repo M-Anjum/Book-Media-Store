@@ -2,9 +2,7 @@ package icc.web.book_media_store.module.user.service;
 
 import icc.web.book_media_store.infrastructure.error.BusinessException;
 import icc.web.book_media_store.infrastructure.error.ErrorCode;
-import icc.web.book_media_store.module.user.dto.ChangePasswordRequest;
-import icc.web.book_media_store.module.user.dto.UpdateProfileRequest;
-import icc.web.book_media_store.module.user.dto.UserProfileResponse;
+import icc.web.book_media_store.module.user.dto.*;
 import icc.web.book_media_store.module.user.dto.mapper.UserMapper;
 import icc.web.book_media_store.module.user.model.User;
 import icc.web.book_media_store.module.user.repository.UserRepository;
@@ -16,9 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
  
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Set;
 import java.util.UUID;
  
 @Service
@@ -29,10 +26,29 @@ public class UserServices {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper; // ← injecté automatiquement par Spring
 
+    private static final Set<String> ALLOWED_TYPES = Set.of("image/gif", "image/jpeg");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("gif", "jpg", "jpeg");
+
     public UserProfileResponse getProfile(String email) {
         return userMapper.toResponse(findByEmail(email));
     }
 
+// ─── REGISTER ─────────────────────────────────────────────────────────────
+
+    @Transactional
+    public UserProfileResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException(ErrorCode.USERNAME_ALREADY_EXISTS);
+        }
+        User user = userMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+ // --- get profile ----
     @Transactional
     public UserProfileResponse updateProfile(String email, UpdateProfileRequest request) {
         User user = findByEmail(email);
@@ -45,7 +61,7 @@ public class UserServices {
         userMapper.updateAppUser(request, user); // ← MapStruct fait le mapping
         return userMapper.toResponse(userRepository.save(user));
     }
- 
+
     // ─── CHANGE PASSWORD ──────────────────────────────────────────────────────
  
     @Transactional
@@ -99,27 +115,14 @@ public class UserServices {
     }
  
     // ─── HELPERS ──────────────────────────────────────────────────────────────
- 
+
     private User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
     }
- 
-    private UserProfileResponse toResponse(User user) {
-        return new UserProfileResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatarUrl(),
-                user.getRole().name(),
-                user.getCreatedAt(),
-                user.getUpdatedAt());
-    }
- 
+
     private String getFileExtension(String filename) {
-        if (filename == null || !filename.contains(".")) return "jpg";
+        if (filename == null || !filename.contains(".")) return "";
         return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
     }
 }

@@ -25,14 +25,9 @@ public class SpringSecurityConfig {
                                 .csrf(csrf -> csrf.disable()) // Désactivé pour le dev API, à sécuriser en prod
 
                                 .authorizeHttpRequests(auth -> auth
-                                                // Accès public
-                                                .requestMatchers("/api/auth/**", "/error").permitAll()
-
-                                                // Accès Admin uniquement (Double sécurité avec le @PreAuthorize du
-                                                // Controller)
-                                                .requestMatchers("/api/orders/admin/**").hasRole("ADMIN")
-
-                                                // Root User : Toute autre requête aux API nécessite d'être connecté
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/user/register").permitAll() 
+                                                .requestMatchers("/error").permitAll()
                                                 .anyRequest().authenticated())
 
                                 .formLogin(form -> form
