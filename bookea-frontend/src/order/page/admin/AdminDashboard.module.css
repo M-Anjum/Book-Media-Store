@@ -1,40 +1,58 @@
-.adminPane {
-    padding: 2rem;
-    background: #f8fafc;
+.adminContainer {
+    padding: 40px;
+    background-color: var(--bookea-bg);
     min-height: 100vh;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
+.header { margin-bottom: 30px; }
+.header h1 { color: var(--bookea-orange); margin: 0; }
+.header p { color: var(--bookea-text-muted); }
+
+.tableWrapper {
+    background: var(--bookea-white);
+    border-radius: 12px;
+    border: 1px solid var(--bookea-border);
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.table th {
-    background: #1e293b;
-    color: white;
-    text-align: left;
-    padding: 1rem;
+.table { width: 100%; border-collapse: collapse; }
+.table th { 
+    background-color: var(--bookea-black); 
+    color: white; 
+    padding: 15px; 
+    text-align: left; 
 }
 
-.table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e2e8f0;
+.table td { padding: 15px; border-bottom: 1px solid var(--bookea-border); }
+
+.orderNumber { font-weight: bold; color: var(--bookea-black); }
+.price { font-weight: bold; color: var(--bookea-orange); }
+
+.statusSelect {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--bookea-border);
+    background: white;
 }
 
-.select {
-    padding: 0.4rem;
-    border-radius: 4px;
-    border: 1px solid #cbd5e1;
-}
-
-.delBtn {
-    background: #fee2e2;
-    color: #991b1b;
+.deleteBtn {
+    background-color: var(--bookea-error-bg);
+    color: var(--bookea-error-text);
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 8px 15px;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.deleteBtn:hover { filter: brightness(0.9); }
+
+.pagination {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }

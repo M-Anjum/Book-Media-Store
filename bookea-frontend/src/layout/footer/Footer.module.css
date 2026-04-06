@@ -1,6 +1,7 @@
 .footer {
-    background-color: #1e293b;
-    color: #cbd5e1;
+    /* Utilisation de ton noir profond pour le footer */
+    background-color: var(--bookea-black); 
+    color: var(--bookea-white);
     padding: 4rem 5% 2rem 5%;
     margin-top: 5rem;
 }
@@ -10,24 +11,33 @@
     grid-template-columns: 2fr 1fr;
     gap: 4rem;
     padding-bottom: 3rem;
-    border-bottom: 1px solid #334155;
+    /* Bordure discrète avec ton gris border */
+    border-bottom: 1px solid var(--bookea-text-muted); 
 }
 
 .brand h3 {
-    color: white;
+    color: var(--bookea-white);
     margin-bottom: 1rem;
     font-size: 1.4rem;
+}
+
+.brand h3 span {
+    /* Rappel de la marque sur le mot "Store" */
+    color: var(--bookea-orange); 
 }
 
 .brand p {
     font-size: 0.9rem;
     line-height: 1.6;
+    color: var(--bookea-border); /* Gris clair pour le texte secondaire */
 }
 
 .links h4 {
-    color: white;
+    color: var(--bookea-white);
     margin-bottom: 1.2rem;
     font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .links ul {
@@ -36,19 +46,26 @@
 }
 
 .links li {
-    font-size: 0.85rem;
-    margin-bottom: 0.6rem;
-    cursor: pointer;
-    transition: color 0.2s;
+    margin-bottom: 0.8rem;
 }
 
-.links li:hover {
-    color: #3b82f6;
+/* Style des liens React Router */
+.links li a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: var(--bookea-border);
+    transition: all 0.3s ease;
+}
+
+.links li a:hover {
+    /* Hover avec ton orange Bookea */
+    color: var(--bookea-orange); 
+    padding-left: 5px; /* Petit effet de mouvement au hover */
 }
 
 .bottom {
     text-align: center;
     padding-top: 2rem;
-    font-size: 0.8rem;
-    color: #64748b;
+    font-size: 0.85rem;
+    color: var(--bookea-text-muted);
 }
