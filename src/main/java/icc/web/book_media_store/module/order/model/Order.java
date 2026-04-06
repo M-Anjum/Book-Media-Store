@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import icc.web.book_media_store.module.order.dto.OrderItem;
+
 @Entity
 @Table(name = "orders")
 @Data
