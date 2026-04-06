@@ -1,0 +1,139 @@
+.container {
+  background-color: var(--bookea-bg);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* --- HERO --- */
+.hero {
+  padding: 100px 5%;
+  text-align: center;
+  background-color: var(--bookea-white);
+  border-bottom: 1px solid var(--bookea-border);
+}
+
+.mainTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--bookea-black);
+  margin-bottom: 1rem;
+}
+
+.accent {
+  color: var(--bookea-orange);
+}
+
+.lead {
+  font-size: 1.4rem;
+  color: var(--bookea-text-muted);
+}
+
+/* --- SPLIT SECTION --- */
+.splitSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  max-width: 1200px;
+  margin: 80px auto;
+  padding: 0 5%;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--bookea-orange);
+}
+
+.imagePlaceholder {
+  height: 350px;
+  background-color: var(--bookea-border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  color: var(--bookea-text-muted);
+}
+
+.decoBox {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background-color: var(--bookea-orange-light);
+  z-index: -1;
+}
+
+/* --- FEATURES GRID --- */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 5%;
+}
+
+.featureCard {
+  background: var(--bookea-white);
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--bookea-border);
+  transition: transform 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-10px);
+  border-color: var(--bookea-orange);
+}
+
+.icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.featureCard h3 {
+  color: var(--bookea-black);
+  margin-bottom: 15px;
+}
+
+/* --- QUOTE --- */
+.quoteWrapper {
+  margin-top: 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.quoteCard {
+  background-color: var(--bookea-black);
+  color: var(--bookea-white);
+  padding: 60px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 700px;
+}
+
+.quote {
+  font-size: 2rem;
+  font-family: serif;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.author {
+  color: var(--bookea-orange);
+  font-weight: bold;
+  font-style: normal;
+}
+
+@media (max-width: 768px) {
+  .splitSection {
+    grid-template-columns: 1fr;
+  }
+  .mainTitle {
+    font-size: 2.5rem;
+  }
+}

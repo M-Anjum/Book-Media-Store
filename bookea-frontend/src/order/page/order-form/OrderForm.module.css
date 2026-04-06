@@ -1,0 +1,102 @@
+.container {
+  padding: 40px 5%;
+  background-color: var(--bookea-bg);
+  min-height: 100vh;
+}
+
+.card {
+  background: var(--bookea-white);
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--bookea-border);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.title {
+  color: var(--bookea-black);
+  margin-bottom: 2rem;
+  border-left: 5px solid var(--bookea-orange);
+  padding-left: 15px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.formGroup input, .formGroup select {
+  padding: 12px;
+  border: 1px solid var(--bookea-border);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.itemPicker {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.addButton {
+  background-color: var(--bookea-black);
+  color: white;
+  border: none;
+  padding: 0 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px;
+  background-color: var(--bookea-bg);
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--bookea-border);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.total {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.total span {
+  color: var(--bookea-orange);
+}
+
+.submitButton {
+  background-color: var(--bookea-orange);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submitButton:hover {
+  background-color: var(--bookea-orange-hover);
+}
