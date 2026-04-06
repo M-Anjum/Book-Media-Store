@@ -6,7 +6,7 @@ import { productService } from '../services/productService';
 const ProductForm: React.FC = () => {
     // État pour le type de produit sélectionné
     const [type, setType] = useState<ProductType>('LIVRE');
-    // État pour les données du formulaire (Partial car on construit l'objet)
+    // État pour les données du formulaire
     const [formData, setFormData] = useState<any>({ category: 'ROMAN' as BookCategory });
     const [loading, setLoading] = useState(false);
 
@@ -24,7 +24,8 @@ const ProductForm: React.FC = () => {
         try {
             await productService.createProduct(type, formData);
             alert(`Succès ! ${type} enregistré avec succès.`);
-            // Optionnel : réinitialiser le formulaire
+            // Optionnel : réinitialiser le formulaire après un succès
+            // setFormData({ category: 'ROMAN' as BookCategory }); 
         } catch (err: any) {
             alert("Erreur lors de la création : " + err.message);
         } finally {
@@ -49,7 +50,11 @@ const ProductForm: React.FC = () => {
                     <label className={labelClass}>TYPE DE PRODUIT</label>
                     <select 
                         value={type} 
-                        onChange={(e) => { setType(e.target.value as ProductType); setFormData({ category: 'ROMAN' }); }}
+                        onChange={(e) => { 
+                            setType(e.target.value as ProductType); 
+                            // CORRECTION : On conserve les données communes et on initialise la catégorie pour éviter une erreur si l'utilisateur ne la touche pas sur un livre
+                            setFormData((prev: any) => ({ ...prev, category: 'ROMAN' })); 
+                        }}
                         className={inputClass}
                     >
                         <option value="LIVRE">📚 LIVRE</option>
