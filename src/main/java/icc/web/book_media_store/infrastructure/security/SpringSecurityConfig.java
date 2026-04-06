@@ -28,7 +28,7 @@ public class SpringSecurityConfig {
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/user/register").permitAll() 
                                                 .requestMatchers("/error").permitAll()
-                                                .anyRequest().authenticated())
+                                                .anyRequest().permitAll())
 
                                 .formLogin(form -> form
                                                 .loginProcessingUrl("/api/auth/login")
