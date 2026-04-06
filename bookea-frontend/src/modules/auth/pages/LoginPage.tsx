@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,12 +87,32 @@ export default function LoginPage() {
                 </div>
 
                 <div style={{ marginBottom: 8 }}>
-                  <label style={labelStyle}>Mot de passe <span style={{ color: "#E8520A" }}>*</span></label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••" required style={inputStyle}
-                    onFocus={e => e.target.style.borderColor = "#E8520A"}
-                    onBlur={e => e.target.style.borderColor = "#ddd"} />
-                </div>
+  <label style={labelStyle}>Mot de passe <span style={{ color: "#E8520A" }}>*</span></label>
+  <div style={{ position: "relative" }}>
+    <input
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={e => setPassword(e.target.value)}
+      placeholder="••••••••"
+      required
+      style={{ ...inputStyle, paddingRight: 40 }}
+      onFocus={e => e.target.style.borderColor = "#E8520A"}
+      onBlur={e => e.target.style.borderColor = "#ddd"}
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      style={{
+        position: "absolute", right: 10, top: "50%",
+        transform: "translateY(-50%)", background: "none",
+        border: "none", cursor: "pointer", padding: 0,
+        color: "#aaa", fontSize: 13
+      }}
+    >
+      {showPassword ? "Masquer" : "Afficher"}
+    </button>
+  </div>
+</div>
 
                 {/* Mot de passe oublié */}
                 <div style={{ textAlign: "right", marginBottom: "1.5rem" }}>
