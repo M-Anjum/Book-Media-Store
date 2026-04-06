@@ -31,6 +31,7 @@ public interface UserMapper {
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "phone", ignore = true)
     User toEntity(RegisterRequest request);
 
 }
