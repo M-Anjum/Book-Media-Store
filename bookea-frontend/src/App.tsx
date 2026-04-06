@@ -1,3 +1,7 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AdminBlogPage } from './modules/blog/pages/AdminBlogPage';
+import { BlogDetailPage } from './modules/blog/pages/BlogDetailPage';
+import { BlogPage } from './modules/blog/pages/BlogPage';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -59,6 +63,9 @@ const App: React.FC = () => {
     </CartProvider>
     <Router>
       <Routes>
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/admin" element={<AdminBlogPage />} />
+        <Route path="/blog/:id" element={<BlogDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<UserProfilePage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />

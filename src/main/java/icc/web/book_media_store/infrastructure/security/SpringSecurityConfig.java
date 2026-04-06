@@ -3,6 +3,7 @@ package icc.web.book_media_store.infrastructure.security;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -24,6 +25,17 @@ public class SpringSecurityConfig {
                                 .cors(Customizer.withDefaults())
                                 .csrf(csrf -> csrf.disable()) // Désactivé pour le dev API, à sécuriser en prod
 
+                                // Désactivé pour faciliter le développement de l'API
+                                .csrf(csrf -> csrf.disable())
+
+                                // Blog: lecture publique (liste, détail, commentaires, images) ; le reste exige auth (+ @PreAuthorize ADMIN où défini).
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/blog/articles",
+                                                                "/api/blog/articles/*",
+                                                                "/api/blog/articles/*/comments")
+                                                                .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/blog/images/*").permitAll()
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/api/user/register").permitAll() 
