@@ -1,13 +1,32 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { ProductType, BookCategory } from "../type/product";
 import { productService } from "../services/productService";
 import styles from "./ProductForm.module.css";
 
-const ProductForm: React.FC = () => {
+interface ProductFormProps {
+    initialData?: any | null;
+    onSuccess?: () => void;
+}
+
+const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess }) => {
+  // 1. On définit isEditMode
+  const isEditMode = !!initialData;
+
   const [type, setType] = useState<ProductType>("LIVRE");
   const [formData, setFormData] = useState<any>({ category: "ROMAN" });
-  const [imageFile, setImageFile] = useState<File | null>(null); // État pour l'image
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 2. Le useEffect est bien importé en haut et utilisé ici
+  useEffect(() => {
+    if (initialData) {
+      setType(initialData.type);
+      setFormData(initialData);
+    } else {
+      setType("LIVRE");
+      setFormData({ category: "ROMAN" });
+    }
+  }, [initialData]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -27,15 +46,26 @@ const ProductForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // On envoie le fichier en 3ème argument
-      await productService.createProduct(
-        type,
-        formData,
-        imageFile || undefined,
-      );
-      alert(`Succès ! Produit et image enregistrés.`);
-      // Reset optionnel
+      // 3. On choisit updateProduct ou createProduct selon le mode
+      if (isEditMode) {
+        await productService.updateProduct(
+          initialData.id,
+          type,
+          formData,
+          imageFile || undefined,
+        );
+        alert(`Succès ! Produit modifié.`);
+      } else {
+        await productService.createProduct(
+          type,
+          formData,
+          imageFile || undefined,
+        );
+        alert(`Succès ! Produit enregistré.`);
+      }
+      
       setImageFile(null);
+      if (onSuccess) onSuccess(); 
     } catch (err: any) {
       alert("Erreur : " + err.message);
     } finally {
@@ -45,7 +75,9 @@ const ProductForm: React.FC = () => {
 
   return (
     <div className={styles.card}>
-      <h2 className={styles.title}>Ajouter un nouveau produit</h2>
+      <h2 className={styles.title}>
+        {isEditMode ? "Modifier le produit" : "Ajouter un nouveau produit"}
+      </h2>
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.typeSelector}>
@@ -54,9 +86,10 @@ const ProductForm: React.FC = () => {
             value={type}
             onChange={(e) => {
               setType(e.target.value as ProductType);
-              setFormData({ category: "ROMAN" });
+              setFormData((prev: any) => ({ ...prev, category: "ROMAN" }));
               setImageFile(null);
             }}
+            disabled={isEditMode}
           >
             <option value="LIVRE">📚 LIVRE</option>
             <option value="MATERIEL_INFORMATIQUE">💻 INFORMATIQUE</option>
@@ -69,12 +102,13 @@ const ProductForm: React.FC = () => {
           <div className={styles.row}>
             <div className={styles.field}>
               <label>Nom du produit</label>
-              <input name="name" onChange={handleChange} required />
+              <input name="name" value={formData.name || ""} onChange={handleChange} required />
             </div>
             <div className={styles.field}>
               <label>Prix (€)</label>
               <input
                 name="price"
+                value={formData.price || ""}
                 type="number"
                 step="0.01"
                 onChange={handleChange}
@@ -85,6 +119,7 @@ const ProductForm: React.FC = () => {
               <label>Stock</label>
               <input
                 name="stock"
+                value={formData.stock || ""}
                 type="number"
                 onChange={handleChange}
                 required
@@ -94,11 +129,10 @@ const ProductForm: React.FC = () => {
 
           <div className={styles.field}>
             <label>Description</label>
-            <textarea name="description" rows={2} onChange={handleChange} />
+            <textarea name="description" value={formData.description || ""} rows={2} onChange={handleChange} />
           </div>
 
           <div className={styles.row}>
-            {/* Champ Upload Local */}
             <div className={styles.field}>
               <label>Photo du produit (Local)</label>
               <input
@@ -108,11 +142,11 @@ const ProductForm: React.FC = () => {
                 className={styles.fileInput}
               />
             </div>
-            {/* On garde l'URL en option au cas où */}
             <div className={styles.field}>
               <label>Ou URL de l'image</label>
               <input
                 name="imageUrl"
+                value={formData.imageUrl || ""}
                 placeholder="https://..."
                 onChange={handleChange}
               />
@@ -126,15 +160,15 @@ const ProductForm: React.FC = () => {
             <div className={styles.row}>
               <div className={styles.field}>
                 <label>Auteur</label>
-                <input name="author" onChange={handleChange} required />
+                <input name="author" value={formData.author || ""} onChange={handleChange} required />
               </div>
               <div className={styles.field}>
                 <label>Pages</label>
-                <input name="pageCount" type="number" onChange={handleChange} />
+                <input name="pageCount" value={formData.pageCount || ""} type="number" onChange={handleChange} />
               </div>
               <div className={styles.field}>
                 <label>Catégorie</label>
-                <select name="category" onChange={handleChange}>
+                <select name="category" value={formData.category || "ROMAN"} onChange={handleChange}>
                   <option value="ROMAN">Roman</option>
                   <option value="MANGA">Manga</option>
                   <option value="BD">BD</option>
@@ -148,15 +182,15 @@ const ProductForm: React.FC = () => {
             <div className={styles.row}>
               <div className={styles.field}>
                 <label>Marque</label>
-                <input name="brand" onChange={handleChange} required />
+                <input name="brand" value={formData.brand || ""} onChange={handleChange} required />
               </div>
               <div className={styles.field}>
                 <label>Processeur</label>
-                <input name="processor" onChange={handleChange} />
+                <input name="processor" value={formData.processor || ""} onChange={handleChange} />
               </div>
               <div className={styles.field}>
                 <label>RAM (Go)</label>
-                <input name="ramSize" type="number" onChange={handleChange} />
+                <input name="ramSize" value={formData.ramSize || ""} type="number" onChange={handleChange} />
               </div>
             </div>
           )}
@@ -165,12 +199,13 @@ const ProductForm: React.FC = () => {
             <div className={styles.row}>
               <div className={styles.field}>
                 <label>Modèle</label>
-                <input name="model" onChange={handleChange} required />
+                <input name="model" value={formData.model || ""} onChange={handleChange} required />
               </div>
               <div className={styles.field}>
                 <label>Puissance (Watts)</label>
                 <input
                   name="powerWatts"
+                  value={formData.powerWatts || ""}
                   type="number"
                   onChange={handleChange}
                 />
@@ -180,7 +215,7 @@ const ProductForm: React.FC = () => {
         </div>
 
         <button type="submit" disabled={loading} className={styles.submitBtn}>
-          {loading ? "ENREGISTREMENT..." : "ENREGISTRER LE PRODUIT ✓"}
+          {loading ? "ENREGISTREMENT..." : isEditMode ? "MODIFIER LE PRODUIT ✏️" : "ENREGISTRER LE PRODUIT ✓"}
         </button>
       </form>
     </div>

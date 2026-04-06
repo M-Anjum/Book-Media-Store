@@ -59,4 +59,32 @@ export const productService = {
     });
     if (!response.ok) throw new Error("Erreur lors de la suppression");
   },
+  updateProduct: async (
+    id: number,
+    type: ProductType,
+    data: any,
+    imageFile?: File,
+  ): Promise<ProductResponse> => {
+    const endpoints: Record<ProductType, string> = {
+      LIVRE: "/books",
+      MATERIEL_INFORMATIQUE: "/computers",
+      HIFI: "/hifi",
+    };
+
+    const formData = new FormData();
+    formData.append("product", new Blob([JSON.stringify(data)], { type: "application/json" }));
+    if (imageFile) formData.append("image", imageFile);
+
+    // Attention, on ajoute /${id} à la fin de l'URL
+    const response = await fetch(`${BASE_URL}${endpoints[type]}/${id}`, {
+      method: "PUT", 
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Erreur lors de la modification");
+    }
+    return response.json();
+  },
 };

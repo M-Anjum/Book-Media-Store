@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ProductResponse } from "../type/product";
 import { productService } from "../services/productService";
-import styles from "./ProductList.module.css"; // Crée ce fichier
-
-const ProductList: React.FC = () => {
+import styles from "./ProductList.module.css";
+interface ProductListProps {
+  onEdit: (product: ProductResponse) => void;
+}
+const ProductList: React.FC<ProductListProps> = ({ onEdit }) => {
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,6 +24,26 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // --- NOUVELLE FONCTION DE SUPPRESSION ---
+  const handleDelete = async (id: number) => {
+    // 1. Demander confirmation à l'Admin
+    const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer ce produit définitivement ?");
+    
+    if (confirmDelete) {
+      try {
+        // 2. Appel au backend pour supprimer en base de données
+        await productService.deleteProduct(id);
+        
+        // 3. Mise à jour de l'affichage : on filtre la liste pour enlever le produit supprimé
+        setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
+        
+        alert("Produit supprimé avec succès !");
+      } catch (err: any) {
+        alert("Erreur lors de la suppression : " + err.message);
+      }
+    }
+  };
 
   const getTypeBadge = (type: string) => {
     const classMap: Record<string, string> = {
@@ -73,8 +95,15 @@ const ProductList: React.FC = () => {
                   {product.stock}
                 </td>
                 <td className={styles.actions}>
-                  <button className={styles.editBtn}>Éditer</button>
-                  <button className={styles.delBtn}>Supprimer</button>
+                  <button className={styles.editBtn} onClick={() => onEdit(product)}>
+                    Éditer
+                  </button>
+                  <button 
+                    className={styles.delBtn} 
+                    onClick={() => handleDelete(product.id)}
+                  >
+                    Supprimer
+                  </button>
                 </td>
               </tr>
             ))}
