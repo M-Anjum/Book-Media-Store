@@ -19,18 +19,23 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    icc.web.book_media_store.module.user.model.User user = userRepository
-            .findByEmail(username)
-            .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable : " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // On cherche par email comme tu l'as défini
+        icc.web.book_media_store.module.user.model.User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Utilisateur introuvable avec l'email : " + email));
 
-    if (!user.isActive()) {
-        throw new UsernameNotFoundException("Compte désactivé : " + username);
+        // On transforme le Set<Role> en List<SimpleGrantedAuthority>
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toList());
+
+        // On retourne l'objet User de Spring Security
+        // (org.springframework.security.core.userdetails.User)
+        return new User(
+                user.getEmail(),
+                user.getPassword(),
+                authorities);
     }
-
-    return new User(
-            user.getEmail(),
-            user.getPassword(),
-            List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
-}
 }
