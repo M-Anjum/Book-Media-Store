@@ -18,8 +18,8 @@ public class WebConfig {
         // Autorise ton frontend Vite sur le port 3000
         config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
 
-        // Autorise les méthodes HTTP nécessaires pour ton Shop et Blog
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Autorise les méthodes HTTP nécessaires pour ton Shop et Blog (PATCH = toggle statut, etc.)
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         // Autorise les headers pour le JSON et l'authentification
         config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
