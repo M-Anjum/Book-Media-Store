@@ -10,18 +10,9 @@ export interface AdminUser {
   phone?: string;
   avatarUrl?: string;
   role: "USER" | "ADMIN";
+  active: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface AdminUpdateUserPayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  address: string;
-  postalCode: string;
-  role: string;
 }
 
 export const adminUserService = {
@@ -31,22 +22,38 @@ export const adminUserService = {
     return res.json();
   },
 
-  async update(id: number, payload: AdminUpdateUserPayload): Promise<AdminUser> {
-    const res = await fetch(`/api/admin/users/${id}`, {
-      method: "PUT",
+  async toggleActive(id: number): Promise<AdminUser> {
+    const res = await fetch(`/api/admin/users/${id}/toggle-active`, {
+      method: "PATCH",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error("Erreur mise à jour");
+    if (!res.ok) throw new Error("Erreur");
     return res.json();
   },
 
-  async delete(id: number): Promise<void> {
-    const res = await fetch(`/api/admin/users/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!res.ok) throw new Error("Erreur suppression");
+  exportCsv(users: AdminUser[]): void {
+    const headers = ["ID", "Prénom", "Nom", "Pseudo", "Email", "Rôle", "Actif", "Créé le"];
+    const rows = users.map(u => [
+      u.id,
+      u.firstName,
+      u.lastName,
+      u.username,
+      u.email,
+      u.role,
+      u.active ? "Oui" : "Non",
+      new Date(u.createdAt).toLocaleDateString("fr-BE"),
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(v => `"${v}"`).join(";"))
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   },
 };
