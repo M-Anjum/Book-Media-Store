@@ -1,10 +1,8 @@
-package icc.web.book_media_store.module.order.dto;
+package icc.web.book_media_store.module.order.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-
-import icc.web.book_media_store.module.order.model.Order;
 
 @Entity
 @Getter
