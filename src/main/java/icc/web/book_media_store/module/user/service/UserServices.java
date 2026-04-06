@@ -80,38 +80,33 @@ public class UserServices {
     // ─── UPLOAD AVATAR ────────────────────────────────────────────────────────
  
     @Transactional
-    public String uploadAvatar(String email, MultipartFile file) {
-        User user = findByEmail(email);
- 
-        // Validate file type
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
- 
-        try {
-            // Create upload directory if it doesn't exist
-            Path uploadPath = Paths.get("uploads/avatars");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
- 
-            // Generate a unique filename to avoid collisions
-            String extension = getFileExtension(file.getOriginalFilename());
-            String filename = UUID.randomUUID() + "." + extension;
-            Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath);
- 
-            // Build the public URL and save it on the user
-            String avatarUrl = "/uploads/avatars/" + filename;
-            user.setAvatarUrl(avatarUrl);
-            userRepository.save(user);
- 
-            return avatarUrl;
- 
-        } catch (IOException e) {
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
-        }
+public String uploadAvatar(String email, MultipartFile file) {
+    User user = findByEmail(email);
+
+    String contentType = file.getContentType();
+    String extension = getFileExtension(file.getOriginalFilename());
+
+    if (contentType == null
+            || !ALLOWED_TYPES.contains(contentType)
+            || !ALLOWED_EXTENSIONS.contains(extension)) {
+        throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
+    }
+
+    try {
+        Path uploadPath = Paths.get("uploads/avatars");
+        if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+        String filename = UUID.randomUUID() + "." + extension;
+        Files.copy(file.getInputStream(), uploadPath.resolve(filename));
+
+        String avatarUrl = "/uploads/avatars/" + filename;
+        user.setAvatarUrl(avatarUrl);
+        userRepository.save(user);
+        return avatarUrl;
+
+    } catch (IOException e) {
+        throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
     }
  
     // ─── HELPERS ──────────────────────────────────────────────────────────────
