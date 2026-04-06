@@ -1,0 +1,54 @@
+.footer {
+    background-color: #1e293b;
+    color: #cbd5e1;
+    padding: 4rem 5% 2rem 5%;
+    margin-top: 5rem;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid #334155;
+}
+
+.brand h3 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}
+
+.brand p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.links h4 {
+    color: white;
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
+}
+
+.links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.links li {
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.links li:hover {
+    color: #3b82f6;
+}
+
+.bottom {
+    text-align: center;
+    padding-top: 2rem;
+    font-size: 0.8rem;
+    color: #64748b;
+}

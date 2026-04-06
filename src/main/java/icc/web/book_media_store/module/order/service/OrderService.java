@@ -22,31 +22,54 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public Order createOrder(OrderRequest request, String login) {
+        // 1. Initialisation de la commande
         Order order = new Order();
-        order.setOrderNumber("BK-" + System.currentTimeMillis());
+        order.setOrderNumber("ORD-" + System.currentTimeMillis());
         order.setOrderDate(LocalDateTime.now());
         order.setUserLogin(login);
         order.setStatus(OrderStatus.PENDING);
 
+        // 2. Traitement des lignes de commande avec validation métier
         List<OrderItem> items = request.getItems().stream().map(itemReq -> {
+            // On récupère le produit (qu'il soit Livre, Hifi ou Info)
+            Product product = productRepository.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+
+            // Validation du stock
+            if (product.getStock() < itemReq.getQuantity()) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+            }
+
+            // Mise à jour du stock (Décrémentation)
+            product.setStock(product.getStock() - itemReq.getQuantity());
+
+            // Création de l'item avec le prix "figé" au moment de l'achat
             OrderItem item = new OrderItem();
-            item.setProductId(itemReq.getProductId());
+            item.setProduct(product);
             item.setQuantity(itemReq.getQuantity());
-            item.setPriceAtPurchase(new BigDecimal("19.99"));
+
+            // Conversion Double (Product) vers BigDecimal (Order) pour la précision
+            // financière
+            item.setPriceAtPurchase(product.getPrice());
+
             item.setOrder(order);
             return item;
         }).toList();
 
         order.setItems(items);
 
+        // 3. Calcul du montant total
         BigDecimal total = items.stream()
                 .map(i -> i.getPriceAtPurchase().multiply(new BigDecimal(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setTotalAmount(total);
+
+        // 4. Sauvegarde (Le CascadeType.ALL dans l'entité Order sauvegadera les items)
         return orderRepository.save(order);
     }
 
