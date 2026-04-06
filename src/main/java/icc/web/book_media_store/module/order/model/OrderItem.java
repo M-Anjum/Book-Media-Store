@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 
+import icc.web.book_media_store.module.product.model.Product;
+
 @Entity
 @Table(name = "order_items")
 @Data

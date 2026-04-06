@@ -7,19 +7,23 @@ import icc.web.book_media_store.module.mini_chat.dto.RoomDTO;
 import icc.web.book_media_store.module.mini_chat.model.Message;
 import icc.web.book_media_store.module.mini_chat.model.MessageType;
 import icc.web.book_media_store.module.mini_chat.model.Room;
-import icc.web.book_media_store.module.mini_chat.model.User;
+import icc.web.book_media_store.module.user.model.User; // L'entité centrale
+import icc.web.book_media_store.module.user.model.role.Role;
 import icc.web.book_media_store.module.mini_chat.repository.MessageRepository;
 import icc.web.book_media_store.module.mini_chat.repository.RoomRepository;
-import icc.web.book_media_store.module.mini_chat.repository.UserRepository;
+import icc.web.book_media_store.module.user.repository.UserRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ChatService {
@@ -46,16 +50,21 @@ public class ChatService {
 		if (content.length() > 500) {
 			throw new BusinessException(ErrorCode.VALIDATION_ERROR);
 		}
+
 		User sender = findOrCreateSender(dto.getSenderUsername());
+
 		Room room = roomRepository.findById(dto.getRoomId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+
 		MessageType type = parseType(dto.getType());
+
 		Message message = Message.builder()
 				.content(content)
 				.sender(sender)
 				.room(room)
 				.type(type)
 				.build();
+
 		message = messageRepository.save(message);
 		return toDto(message);
 	}
@@ -64,10 +73,12 @@ public class ChatService {
 	public List<MessageDTO> getMessagesByRoom(Long roomId) {
 		Room room = roomRepository.findById(roomId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+
 		Page<Message> page = messageRepository.findByRoomOrderBySentAtDesc(room, Pageable.ofSize(10));
 		List<Message> lastTenDesc = page.getContent();
 		List<Message> lastTenAsc = new ArrayList<>(lastTenDesc);
 		Collections.reverse(lastTenAsc);
+
 		return lastTenAsc.stream()
 				.map(this::toDto)
 				.toList();
@@ -93,15 +104,25 @@ public class ChatService {
 				.toList();
 	}
 
+	/**
+	 * Logique de création d'un utilisateur "Guest" avec la liste de rôles
+	 */
 	private User findOrCreateSender(String senderUsername) {
 		if (senderUsername == null || senderUsername.isBlank()) {
 			throw new BusinessException(ErrorCode.VALIDATION_ERROR);
 		}
+
 		return userRepository.findByUsername(senderUsername).orElseGet(() -> {
 			User guest = User.builder()
 					.username(senderUsername)
+					.firstName("Guest") // Requis par ton entité User
+					.lastName(senderUsername) // Requis par ton entité User
 					.password(passwordEncoder.encode("guest"))
 					.email(senderUsername + "@guest.com")
+					.birthDate(LocalDate.of(2000, 1, 1)) // Date bidon pour la validation
+					.address("Online Chat")
+					.postalCode("00000")
+					.roles(Set.of(Role.USER)) // <--- Utilisation du Set de rôles
 					.build();
 			return userRepository.save(guest);
 		});
