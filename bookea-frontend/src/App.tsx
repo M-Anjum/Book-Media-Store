@@ -32,6 +32,7 @@ import { BlogDetailPage } from "./modules/blog/pages/BlogDetailPage";
 import { LoginPage } from "./modules/auth";
 import { RegisterPage } from "./modules/user/pages";
 import { UserProfilePage } from "./modules/user";
+import AdminProductPage from "./modules/product/pages/AdminProductPage";
 
 const App: React.FC = () => {
   return (
@@ -58,6 +59,7 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfilePage />} />
 
               {/* --- ADMIN COMMANDES --- */}
+              <Route path="/admin/add-product" element={<AdminProductPage />} />
               <Route path="/admin/orders" element={<AdminDashboard />} />
               <Route
                 path="/admin/orders/archived"
