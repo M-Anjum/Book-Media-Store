@@ -4,34 +4,54 @@ import icc.web.book_media_store.module.user.dto.RegisterRequest;
 import icc.web.book_media_store.module.user.dto.UserProfileResponse;
 import icc.web.book_media_store.module.user.dto.UpdateProfileRequest;
 import icc.web.book_media_store.module.user.model.User;
+import icc.web.book_media_store.module.user.model.role.Role;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    // AppUser → UserProfileResponse
-    @Mapping(target = "role", expression = "java(user.getRole().name())")
+    // --- ENTITY -> RESPONSE ---
+
+    @Mapping(target = "roles", source = "roles", qualifiedByName = "mapRoles")
     UserProfileResponse toResponse(User user);
 
-    // UpdateProfileRequest → AppUser (pour la mise à jour)
+    // --- REQUEST -> ENTITY (UPDATE) ---
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "avatarUrl", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "roles", ignore = true) // On ne change pas les rôles via le profil utilisateur
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "birthDate", ignore = true)
-    @Mapping(target = "username", ignore = true)
+    @Mapping(target = "username", ignore = true) // Le username est souvent fixe
     void updateAppUser(UpdateProfileRequest request, @MappingTarget User user);
+
+    // --- REGISTER -> ENTITY ---
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "avatarUrl", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "roles", ignore = true) // Géré manuellement dans le service ou via @Builder.Default
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "phone", ignore = true)
     User toEntity(RegisterRequest request);
 
+    // --- LOGIQUE DE MAPPING PERSONNALISÉE ---
+
+    /**
+     * Transforme le Set<Role> en Set<String> pour le DTO
+     */
+    @Named("mapRoles")
+    default Set<String> mapRoles(Set<Role> roles) {
+        if (roles == null)
+            return null;
+        return roles.stream()
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+    }
 }

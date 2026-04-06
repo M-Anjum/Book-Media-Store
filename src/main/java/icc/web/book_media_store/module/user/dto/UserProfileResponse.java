@@ -1,6 +1,7 @@
 package icc.web.book_media_store.module.user.dto;
  
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.time.LocalDate;
  
 public record UserProfileResponse(
@@ -11,7 +12,7 @@ public record UserProfileResponse(
         String email,
         String phone,
         String avatarUrl,
-        String role,
+        Set<String> roles,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDate birthDate,

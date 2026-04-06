@@ -1,5 +1,7 @@
 package icc.web.book_media_store.module.product.model;
 
+import java.math.BigDecimal;
+
 import icc.web.book_media_store.module.product.enums.BookCategory;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +24,7 @@ public class Book extends Product {
     private BookCategory category; // ROMAN, MANGA, etc.
 
     // Constructeur pour forcer le type à la création
-    public Book(String name, String description, Double price, Integer stock, 
+    public Book(String name, String description, BigDecimal price, Integer stock, 
             String imageUrl, String author, Integer pageCount, BookCategory category) {
     // 1. On envoie les infos communes au constructeur du Parent (Product)
     this.setName(name);
