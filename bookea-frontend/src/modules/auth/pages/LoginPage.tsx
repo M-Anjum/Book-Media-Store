@@ -1,22 +1,24 @@
 import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { authService } from "../services";
+import { useAuth } from "../context/AuthContext";
 
 type View = "login" | "forgot";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { checkAuth } = useAuth();
   const registered = (location.state as { registered?: boolean })?.registered;
 
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await authService.login({ username: email, password });
+      await checkAuth();
       navigate("/profile");
     } catch {
       setError("Email ou mot de passe incorrect.");
@@ -37,8 +40,7 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
     try {
-      // TODO: brancher sur POST /api/auth/forgot-password
-      await new Promise((r) => setTimeout(r, 800)); // simulation
+      await new Promise((r) => setTimeout(r, 800));
       setSuccess("Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.");
     } catch {
       setError("Une erreur est survenue. Veuillez réessayer.");
@@ -48,20 +50,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-background-tertiary)", padding: "2rem 1rem" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F5F0", padding: "2rem 1rem" }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
 
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <Link to="/" style={{ fontSize: 24, fontWeight: 500, color: "#E8520A", textDecoration: "none" }}>Bookea</Link>
+          <Link to="/" style={{ fontSize: 24, fontWeight: 600, color: "#E8520A", textDecoration: "none" }}>Bookea</Link>
         </div>
 
         <div style={{ background: "#fff", border: "0.5px solid #e5e5e5", borderRadius: 12, padding: "2rem" }}>
 
-          {/* ── LOGIN VIEW ───────────────────────── */}
+          {/* ── LOGIN ───────────────────────────────── */}
           {view === "login" && (
             <>
-              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1.5rem", textAlign: "center" }}>
+              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1.5rem", textAlign: "center", color: "#111" }}>
                 Connexion
               </h1>
 
@@ -78,51 +80,55 @@ export default function LoginPage() {
               )}
 
               <form onSubmit={handleLogin} noValidate>
+
                 <div style={{ marginBottom: 14 }}>
                   <label style={labelStyle}>Email <span style={{ color: "#E8520A" }}>*</span></label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    placeholder="john@exemple.com" required style={inputStyle}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="john@exemple.com"
+                    required
+                    style={inputStyle}
                     onFocus={e => e.target.style.borderColor = "#E8520A"}
-                    onBlur={e => e.target.style.borderColor = "#ddd"} />
+                    onBlur={e => e.target.style.borderColor = "#ddd"}
+                  />
                 </div>
 
                 <div style={{ marginBottom: 8 }}>
-  <label style={labelStyle}>Mot de passe <span style={{ color: "#E8520A" }}>*</span></label>
-  <div style={{ position: "relative" }}>
-    <input
-      type={showPassword ? "text" : "password"}
-      value={password}
-      onChange={e => setPassword(e.target.value)}
-      placeholder="••••••••"
-      required
-      style={{ ...inputStyle, paddingRight: 40 }}
-      onFocus={e => e.target.style.borderColor = "#E8520A"}
-      onBlur={e => e.target.style.borderColor = "#ddd"}
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      style={{
-        position: "absolute", right: 10, top: "50%",
-        transform: "translateY(-50%)", background: "none",
-        border: "none", cursor: "pointer", padding: 0,
-        color: "#aaa", fontSize: 13
-      }}
-    >
-      {showPassword ? "Masquer" : "Afficher"}
-    </button>
-  </div>
-</div>
+                  <label style={labelStyle}>Mot de passe <span style={{ color: "#E8520A" }}>*</span></label>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      style={{ ...inputStyle, paddingRight: 80 }}
+                      onFocus={e => e.target.style.borderColor = "#E8520A"}
+                      onBlur={e => e.target.style.borderColor = "#ddd"}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 12 }}
+                    >
+                      {showPassword ? "Masquer" : "Afficher"}
+                    </button>
+                  </div>
+                </div>
 
-                {/* Mot de passe oublié */}
                 <div style={{ textAlign: "right", marginBottom: "1.5rem" }}>
-                  <button type="button" onClick={() => { setView("forgot"); setError(null); }}
-                    style={{ background: "none", border: "none", color: "#E8520A", fontSize: 13, cursor: "pointer", padding: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => { setView("forgot"); setError(null); }}
+                    style={{ background: "none", border: "none", color: "#E8520A", fontSize: 13, cursor: "pointer", padding: 0 }}
+                  >
                     Mot de passe oublié ?
                   </button>
                 </div>
 
-                <button type="submit" disabled={isLoading} style={btnPrimaryStyle(isLoading)}>
+                <button type="submit" disabled={isLoading} style={btnStyle(isLoading)}>
                   {isLoading ? "Connexion…" : "Se connecter"}
                 </button>
               </form>
@@ -136,15 +142,18 @@ export default function LoginPage() {
             </>
           )}
 
-          {/* ── FORGOT VIEW ──────────────────────── */}
+          {/* ── FORGOT ──────────────────────────────── */}
           {view === "forgot" && (
             <>
-              <button type="button" onClick={() => { setView("login"); setError(null); setSuccess(null); }}
-                style={{ background: "none", border: "none", color: "#666", fontSize: 13, cursor: "pointer", padding: 0, marginBottom: "1rem", display: "flex", alignItems: "center", gap: 4 }}>
+              <button
+                type="button"
+                onClick={() => { setView("login"); setError(null); setSuccess(null); }}
+                style={{ background: "none", border: "none", color: "#666", fontSize: 13, cursor: "pointer", padding: 0, marginBottom: "1rem" }}
+              >
                 ← Retour
               </button>
 
-              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8, textAlign: "center" }}>
+              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8, textAlign: "center", color: "#111" }}>
                 Mot de passe oublié
               </h1>
               <p style={{ fontSize: 13, color: "#666", textAlign: "center", marginBottom: "1.5rem" }}>
@@ -165,12 +174,18 @@ export default function LoginPage() {
                 <form onSubmit={handleForgot} noValidate>
                   <div style={{ marginBottom: "1.5rem" }}>
                     <label style={labelStyle}>Adresse email <span style={{ color: "#E8520A" }}>*</span></label>
-                    <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
-                      placeholder="john@exemple.com" required style={inputStyle}
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={e => setForgotEmail(e.target.value)}
+                      placeholder="john@exemple.com"
+                      required
+                      style={inputStyle}
                       onFocus={e => e.target.style.borderColor = "#E8520A"}
-                      onBlur={e => e.target.style.borderColor = "#ddd"} />
+                      onBlur={e => e.target.style.borderColor = "#ddd"}
+                    />
                   </div>
-                  <button type="submit" disabled={isLoading} style={btnPrimaryStyle(isLoading)}>
+                  <button type="submit" disabled={isLoading} style={btnStyle(isLoading)}>
                     {isLoading ? "Envoi…" : "Envoyer le lien"}
                   </button>
                 </form>
@@ -192,11 +207,13 @@ const inputStyle: React.CSSProperties = {
   width: "100%", height: 38, padding: "0 10px",
   border: "0.5px solid #ddd", borderRadius: 8,
   fontSize: 14, outline: "none", transition: "border-color .2s",
-  boxSizing: "border-box"
+  boxSizing: "border-box", color: "#222"
 };
 
-const btnPrimaryStyle = (disabled: boolean): React.CSSProperties => ({
-  width: "100%", height: 40, background: disabled ? "#ccc" : "#E8520A",
+const btnStyle = (disabled: boolean): React.CSSProperties => ({
+  width: "100%", height: 40,
+  background: disabled ? "#ccc" : "#E8520A",
   color: "#fff", border: "none", borderRadius: 8,
-  fontSize: 14, fontWeight: 500, cursor: disabled ? "not-allowed" : "pointer"
+  fontSize: 14, fontWeight: 500,
+  cursor: disabled ? "not-allowed" : "pointer"
 });
