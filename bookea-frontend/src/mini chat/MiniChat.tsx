@@ -1,9 +1,11 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type CSSProperties,
   type FormEvent,
+  type ReactNode,
 } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -12,135 +14,311 @@ import {
   Outlet,
   Route,
   Routes,
-  useMatch,
   useNavigate,
   useParams,
 } from "react-router-dom";
 import { createRoom, fetchMessages, fetchRooms } from "./api/roomsApi";
-import { useAuth } from "./hooks/useAuth";
+import { username } from "./hooks/useAuth";
 import { useStompChat } from "./hooks/useStompChat";
 import type { MessageDTO, RoomDTO } from "./types/chat.types";
 
-const shell: CSSProperties = {
-  backgroundColor: "#ffffff",
-  color: "#000000",
-  minHeight: "100vh",
-  boxSizing: "border-box",
+const C = {
+  primary: "#E8622A",
+  bg: "#1a1a1a",
+  chatBg: "#f5f5f5",
+  white: "#ffffff",
+  textDark: "#1a1a1a",
+  grey: "#888888",
+  greyMuted: "#999999",
+  cardBorder: "#333333",
+  errorBg: "#3d2020",
+  errorText: "#ffaaaa",
+} as const;
+
+const pageScroll: CSSProperties = {
+  flex: 1,
+  overflowY: "auto",
+  overflowX: "hidden",
+  WebkitOverflowScrolling: "touch",
 };
 
-const inputStyle: CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "8px 10px",
-  fontSize: "14px",
-  color: "#000000",
-  backgroundColor: "#ffffff",
-  border: "1px solid #cccccc",
-  borderRadius: "4px",
-};
-
-const btnPrimary: CSSProperties = {
-  padding: "8px 14px",
-  fontSize: "14px",
-  color: "#ffffff",
-  backgroundColor: "#333333",
-  border: "1px solid #333333",
-  borderRadius: "4px",
-  cursor: "pointer",
-};
-
-const btnSecondary: CSSProperties = {
-  padding: "8px 14px",
-  fontSize: "14px",
-  color: "#000000",
-  backgroundColor: "#f0f0f0",
-  border: "1px solid #cccccc",
-  borderRadius: "4px",
-  cursor: "pointer",
-};
-
-const btnLink: CSSProperties = {
-  padding: 0,
-  fontSize: "14px",
-  color: "#0000cc",
-  backgroundColor: "transparent",
-  border: "none",
-  cursor: "pointer",
-  textDecoration: "underline",
-};
-
-/** Enveloppe /chat : assure le fond blanc et le rendu des routes enfants via Outlet. */
 function ChatShell() {
+  useEffect(() => {
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
+    };
+  }, []);
+
   return (
-    <div style={shell}>
+    <div
+      style={{
+        height: "100vh",
+        maxHeight: "100dvh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        background: C.bg,
+        boxSizing: "border-box",
+      }}
+    >
       <Outlet />
     </div>
   );
 }
 
-function MessagesInline({ messages }: { messages: MessageDTO[] }) {
+function MessengerHeader({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children?: ReactNode;
+}) {
   return (
-    <ul
+    <header
       style={{
-        listStyle: "none",
-        margin: 0,
-        padding: 0,
-        flex: 1,
-        overflow: "auto",
-        fontSize: "14px",
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        padding: "14px 16px",
+        background: C.bg,
+        color: C.white,
+        borderBottom: `1px solid ${C.cardBorder}`,
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "-0.02em" }}>
+          {title}
+        </div>
+        {subtitle ? (
+          <div
+            style={{
+              fontSize: "12px",
+              color: C.greyMuted,
+              marginTop: "2px",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {subtitle}
+          </div>
+        ) : null}
+      </div>
+      {children}
+    </header>
+  );
+}
+
+function RoomSwitcher({
+  rooms,
+  roomId,
+  onChange,
+}: {
+  rooms: RoomDTO[];
+  roomId: number;
+  onChange: (id: number) => void;
+}) {
+  return (
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        fontSize: "13px",
+        color: C.white,
+        cursor: "pointer",
+      }}
+    >
+      <span style={{ whiteSpace: "nowrap" }}>Salons</span>
+      <select
+        value={roomId}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{
+          maxWidth: "min(200px, 45vw)",
+          padding: "8px 28px 8px 10px",
+          fontSize: "13px",
+          color: C.textDark,
+          background: C.white,
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          appearance: "none",
+          backgroundImage: `linear-gradient(45deg, transparent 50%, ${C.primary} 50%), linear-gradient(135deg, ${C.primary} 50%, transparent 50%)`,
+          backgroundPosition: "calc(100% - 14px) calc(1em + 1px), calc(100% - 9px) calc(1em + 1px)",
+          backgroundSize: "5px 5px, 5px 5px",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {rooms.map((r) => (
+          <option key={r.id} value={r.id}>
+            {r.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function MessageBubbleRow({ m }: { m: MessageDTO }) {
+  const t = (m.type || "CHAT").toUpperCase();
+  const isSystem = t === "JOIN" || t === "LEAVE";
+  const isMine = !isSystem && m.senderUsername === username;
+
+  const timeStr = format(new Date(m.sentAt), "HH:mm", { locale: fr });
+
+  if (isSystem) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "14px",
+          padding: "0 8px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "12px",
+            fontStyle: "italic",
+            color: C.grey,
+            textAlign: "center",
+            maxWidth: "90%",
+          }}
+        >
+          {m.content}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: isMine ? "flex-end" : "flex-start",
+        alignItems: "flex-end",
+        gap: "8px",
+        marginBottom: "14px",
+        padding: "0 4px",
+      }}
+    >
+      {!isMine ? (
+        <span
+          style={{ fontSize: "18px", lineHeight: 1, flexShrink: 0, opacity: 0.85 }}
+          aria-hidden
+        >
+          👤
+        </span>
+      ) : null}
+      <div
+        style={{
+          maxWidth: "70%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: isMine ? "flex-end" : "flex-start",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "11px",
+            color: C.grey,
+            marginBottom: "4px",
+            paddingLeft: isMine ? 0 : "4px",
+            paddingRight: isMine ? "4px" : 0,
+          }}
+        >
+          {m.senderUsername}
+        </span>
+        <div
+          style={{
+            borderRadius: "18px",
+            padding: "10px 14px",
+            background: isMine ? C.primary : C.white,
+            color: isMine ? C.white : C.textDark,
+            boxShadow: isMine
+              ? "0 1px 2px rgba(0,0,0,0.12)"
+              : "0 1px 2px rgba(0,0,0,0.08)",
+            wordBreak: "break-word",
+          }}
+        >
+          {m.content}
+        </div>
+        <span
+          style={{
+            fontSize: "10px",
+            color: C.grey,
+            marginTop: "4px",
+            paddingLeft: isMine ? 0 : "6px",
+            paddingRight: isMine ? "6px" : 0,
+          }}
+        >
+          {timeStr}
+        </span>
+      </div>
+      {isMine ? (
+        <span
+          style={{ fontSize: "18px", lineHeight: 1, flexShrink: 0, opacity: 0.85 }}
+          aria-hidden
+        >
+          👤
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function MessengerMessages({ messages }: { messages: MessageDTO[] }) {
+  const endRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div
+      style={{
+        ...pageScroll,
+        minHeight: 0,
+        background: C.chatBg,
+        padding: "16px 12px 20px",
       }}
     >
       {messages.map((m) => (
-        <li
-          key={`${m.id}-${m.sentAt}`}
-          style={{
-            padding: "10px 12px",
-            borderBottom: "1px solid #e0e0e0",
-            color: "#000000",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              gap: "8px",
-            }}
-          >
-            <span style={{ fontWeight: 600, color: "#000000" }}>
-              {m.senderUsername}
-            </span>
-            <span style={{ fontSize: "12px", color: "#444444" }}>
-              {format(new Date(m.sentAt), "HH:mm:ss", { locale: fr })}
-            </span>
-          </div>
-          <div style={{ marginTop: "6px", color: "#000000" }}>{m.content}</div>
-          <div style={{ fontSize: "11px", color: "#666666", marginTop: "4px" }}>
-            {m.type}
-          </div>
-        </li>
+        <MessageBubbleRow key={`${m.id}-${m.sentAt}`} m={m} />
       ))}
-    </ul>
+      <div ref={endRef} style={{ height: 1 }} />
+    </div>
   );
 }
 
 function RoomChatPanel({
   roomId,
-  token,
-  username,
+  rooms,
+  onSelectRoom,
 }: {
   roomId: number;
-  token: string;
-  username: string;
+  rooms: RoomDTO[];
+  onSelectRoom: (id: number) => void;
 }) {
   const {
     messages,
     connected,
     sendChat,
-    sendJoin,
     replaceMessages,
-  } = useStompChat(roomId, token, username);
+  } = useStompChat(roomId, null, username);
   const [draft, setDraft] = useState("");
+
+  const currentRoom = rooms.find((r) => r.id === roomId);
+  const label = currentRoom?.name ?? `Salon #${roomId}`;
 
   useEffect(() => {
     void (async () => {
@@ -157,124 +335,103 @@ function RoomChatPanel({
   };
 
   return (
-    <>
-      <div
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+        background: C.bg,
+      }}
+    >
+      <MessengerHeader
+        title="🔶 Bookie Chat"
+        subtitle={connected ? label : "Connexion…"}
+      >
+        {rooms.length > 0 ? (
+          <RoomSwitcher
+            rooms={rooms}
+            roomId={roomId}
+            onChange={onSelectRoom}
+          />
+        ) : null}
+      </MessengerHeader>
+
+      <MessengerMessages messages={messages} />
+
+      <form
+        onSubmit={handleSend}
         style={{
+          flexShrink: 0,
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          padding: "10px 12px",
-          borderBottom: "1px solid #dddddd",
-          backgroundColor: "#f9f9f9",
-          color: "#000000",
+          gap: "10px",
+          padding: "12px 14px",
+          paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+          background: C.bg,
+          borderTop: `1px solid ${C.cardBorder}`,
+          boxSizing: "border-box",
         }}
       >
-        <span style={{ fontSize: "14px", fontWeight: 600 }}>
-          Salon #{roomId}
-        </span>
-        <span
+        <input
+          type="text"
+          placeholder="Écrire un message…"
+          value={draft}
+          maxLength={500}
+          onChange={(e) => setDraft(e.target.value)}
+          disabled={!connected}
           style={{
-            fontSize: "12px",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            color: "#ffffff",
-            backgroundColor: connected ? "#228822" : "#888888",
+            flex: 1,
+            minWidth: 0,
+            padding: "12px 16px",
+            fontSize: "15px",
+            color: C.textDark,
+            background: C.white,
+            border: "none",
+            borderRadius: "24px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!connected || !draft.trim()}
+          aria-label="Envoyer"
+          style={{
+            flexShrink: 0,
+            width: "48px",
+            height: "48px",
+            padding: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "20px",
+            lineHeight: 1,
+            color: C.white,
+            background: C.primary,
+            border: "none",
+            borderRadius: "50%",
+            cursor: connected && draft.trim() ? "pointer" : "not-allowed",
+            opacity: connected && draft.trim() ? 1 : 0.45,
+            boxShadow: "0 2px 8px rgba(232, 98, 42, 0.45)",
           }}
         >
-          {connected ? "WS connecté" : "WS…"}
-        </span>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 320,
-          backgroundColor: "#ffffff",
-          color: "#000000",
-        }}
-      >
-        <MessagesInline messages={messages} />
-        <div
-          style={{
-            borderTop: "1px solid #dddddd",
-            padding: "10px",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <button
-            type="button"
-            style={{ ...btnSecondary, marginBottom: "8px", fontSize: "13px" }}
-            onClick={() => sendJoin()}
-          >
-            Envoyer « JOIN » (présence)
-          </button>
-          <form
-            style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}
-            onSubmit={handleSend}
-          >
-            <input
-              style={{ ...inputStyle, flex: 1 }}
-              placeholder="Message…"
-              value={draft}
-              maxLength={500}
-              onChange={(e) => setDraft(e.target.value)}
-            />
-            <span
-              style={{
-                fontSize: "12px",
-                color: "#444444",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {draft.length}/500
-            </span>
-            <button
-              type="submit"
-              style={{
-                ...btnPrimary,
-                opacity: connected ? 1 : 0.5,
-                cursor: connected ? "pointer" : "not-allowed",
-              }}
-              disabled={!connected}
-            >
-              Envoyer
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
+          ➤
+        </button>
+      </form>
+    </div>
   );
 }
 
 function RoomRoute({
-  token,
-  username,
   rooms,
-  selectedRoomId,
   onSelectRoom,
-  newRoomName,
-  setNewRoomName,
-  newRoomDesc,
-  setNewRoomDesc,
-  onCreateRoom,
-  error,
-  onLogout,
-  logoutLabel,
 }: {
-  token: string;
-  username: string;
   rooms: RoomDTO[];
-  selectedRoomId: number | null;
   onSelectRoom: (id: number) => void;
-  newRoomName: string;
-  setNewRoomName: (v: string) => void;
-  newRoomDesc: string;
-  setNewRoomDesc: (v: string) => void;
-  onCreateRoom: (e: FormEvent) => void;
-  error: string | null;
-  onLogout: () => void;
-  logoutLabel: string;
 }) {
+  const navigate = useNavigate();
   const { roomId: roomIdParam } = useParams<{ roomId: string }>();
   const parsed = roomIdParam ? Number.parseInt(roomIdParam, 10) : NaN;
   const roomId = Number.isFinite(parsed) ? parsed : NaN;
@@ -283,141 +440,27 @@ function RoomRoute({
     return <Navigate to="/chat/rooms" replace />;
   }
 
+  const goRoom = (id: number) => {
+    onSelectRoom(id);
+    navigate(`/chat/room/${id}`);
+  };
+
   return (
-    <div style={{ ...shell, padding: "16px 20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600 }}>
-          Mini-chat
-        </h2>
-        <button type="button" style={btnSecondary} onClick={onLogout}>
-          Déconnexion ({logoutLabel})
-        </button>
-      </div>
-      {error && (
-        <div
-          style={{
-            padding: "10px 12px",
-            marginBottom: "12px",
-            backgroundColor: "#ffeeee",
-            color: "#880000",
-            border: "1px solid #cc6666",
-            borderRadius: "4px",
-            fontSize: "14px",
-          }}
-        >
-          {error}
-        </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "16px",
-          alignItems: "flex-start",
-        }}
-      >
-        <div
-          style={{
-            flex: "1 1 260px",
-            minWidth: "220px",
-            border: "1px solid #dddddd",
-            borderRadius: "6px",
-            overflow: "hidden",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <div
-            style={{
-              padding: "10px 12px",
-              fontSize: "14px",
-              fontWeight: 600,
-              borderBottom: "1px solid #dddddd",
-              backgroundColor: "#f5f5f5",
-              color: "#000000",
-            }}
-          >
-            Salons
-          </div>
-          <div>
-            {rooms.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "left",
-                  padding: "10px 12px",
-                  fontSize: "14px",
-                  color: "#000000",
-                  backgroundColor:
-                    selectedRoomId === r.id ? "#e8e8e8" : "#ffffff",
-                  border: "none",
-                  borderBottom: "1px solid #eeeeee",
-                  cursor: "pointer",
-                }}
-                onClick={() => onSelectRoom(r.id)}
-              >
-                {r.name}
-              </button>
-            ))}
-          </div>
-          <form
-            style={{
-              padding: "10px",
-              borderTop: "1px solid #dddddd",
-              backgroundColor: "#fafafa",
-            }}
-            onSubmit={onCreateRoom}
-          >
-            <input
-              style={{ ...inputStyle, marginBottom: "8px" }}
-              placeholder="Nouveau salon"
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-            />
-            <input
-              style={{ ...inputStyle, marginBottom: "8px" }}
-              placeholder="Description (optionnel)"
-              value={newRoomDesc}
-              onChange={(e) => setNewRoomDesc(e.target.value)}
-            />
-            <button type="submit" style={{ ...btnPrimary, width: "100%" }}>
-              Créer
-            </button>
-          </form>
-        </div>
-        <div
-          style={{
-            flex: "2 1 320px",
-            minWidth: "280px",
-            border: "1px solid #dddddd",
-            borderRadius: "6px",
-            overflow: "hidden",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <RoomChatPanel
-            roomId={roomId}
-            token={token}
-            username={username}
-          />
-        </div>
-      </div>
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
+      <RoomChatPanel roomId={roomId} rooms={rooms} onSelectRoom={goRoom} />
     </div>
   );
 }
 
 function RoomsRoute({
-  rooms,
-  selectedRoomId,
   onSelectRoom,
   newRoomName,
   setNewRoomName,
@@ -425,11 +468,7 @@ function RoomsRoute({
   setNewRoomDesc,
   onCreateRoom,
   error,
-  onLogout,
-  logoutLabel,
 }: {
-  rooms: RoomDTO[];
-  selectedRoomId: number | null;
   onSelectRoom: (id: number) => void;
   newRoomName: string;
   setNewRoomName: (v: string) => void;
@@ -437,227 +476,242 @@ function RoomsRoute({
   setNewRoomDesc: (v: string) => void;
   onCreateRoom: (e: FormEvent) => void;
   error: string | null;
-  onLogout: () => void;
-  logoutLabel: string;
 }) {
+  const [rooms, setRooms] = useState<RoomDTO[]>([]);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const data = await fetchRooms();
+        setRooms(Array.isArray(data) ? data : []);
+      } catch {
+        setRooms([]);
+      }
+    })();
+  }, []);
+
   return (
-    <div style={{ ...shell, padding: "16px 20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 600 }}>
-          Mini-chat
-        </h2>
-        <button type="button" style={btnSecondary} onClick={onLogout}>
-          Déconnexion ({logoutLabel})
-        </button>
-      </div>
-      {error && (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
+      <MessengerHeader title="🔶 Bookie Chat" subtitle="Choisis un salon" />
+
+      <div style={{ ...pageScroll, padding: "16px" }}>
+        {error ? (
+          <div
+            style={{
+              padding: "12px 14px",
+              marginBottom: "16px",
+              borderRadius: "12px",
+              background: C.errorBg,
+              color: C.errorText,
+              fontSize: "14px",
+            }}
+          >
+            {error}
+          </div>
+        ) : null}
+
         <div
           style={{
-            padding: "10px 12px",
+            fontSize: "13px",
+            fontWeight: 600,
+            color: C.greyMuted,
             marginBottom: "12px",
-            backgroundColor: "#ffeeee",
-            color: "#880000",
-            border: "1px solid #cc6666",
-            borderRadius: "4px",
-            fontSize: "14px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
           }}
         >
-          {error}
+          Salons disponibles
         </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "16px",
-          alignItems: "flex-start",
-        }}
-      >
+
+        {rooms.length === 0 ? (
+          <div
+            style={{
+              padding: "24px 16px",
+              textAlign: "center",
+              color: C.grey,
+              fontSize: "15px",
+            }}
+          >
+            Aucun salon disponible
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            {rooms.map((r) => (
+              <div
+                key={r.id}
+                style={{
+                  borderRadius: "14px",
+                  padding: "16px",
+                  background: "#252525",
+                  borderLeft: `4px solid ${C.primary}`,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "17px",
+                    fontWeight: 700,
+                    color: C.white,
+                    marginBottom: "6px",
+                  }}
+                >
+                  {r.name}
+                </div>
+                {r.description ? (
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      color: C.greyMuted,
+                      marginBottom: "12px",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {r.description}
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: "12px" }} />
+                )}
+                <button
+                  type="button"
+                  onClick={() => onSelectRoom(r.id)}
+                  style={{
+                    width: "100%",
+                    padding: "11px 16px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: C.white,
+                    background: C.primary,
+                    border: "none",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 10px rgba(232, 98, 42, 0.35)",
+                  }}
+                >
+                  Rejoindre
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div
           style={{
-            flex: "1 1 260px",
-            minWidth: "220px",
-            border: "1px solid #dddddd",
-            borderRadius: "6px",
-            overflow: "hidden",
-            backgroundColor: "#ffffff",
+            marginTop: "28px",
+            paddingTop: "20px",
+            borderTop: `1px solid ${C.cardBorder}`,
           }}
         >
           <div
             style={{
-              padding: "10px 12px",
-              fontSize: "14px",
+              fontSize: "13px",
               fontWeight: 600,
-              borderBottom: "1px solid #dddddd",
-              backgroundColor: "#f5f5f5",
-              color: "#000000",
+              color: C.greyMuted,
+              marginBottom: "12px",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
             }}
           >
-            Salons
-          </div>
-          <div>
-            {rooms.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "left",
-                  padding: "10px 12px",
-                  fontSize: "14px",
-                  color: "#000000",
-                  backgroundColor:
-                    selectedRoomId === r.id ? "#e8e8e8" : "#ffffff",
-                  border: "none",
-                  borderBottom: "1px solid #eeeeee",
-                  cursor: "pointer",
-                }}
-                onClick={() => onSelectRoom(r.id)}
-              >
-                {r.name}
-              </button>
-            ))}
+            Nouveau salon
           </div>
           <form
-            style={{
-              padding: "10px",
-              borderTop: "1px solid #dddddd",
-              backgroundColor: "#fafafa",
-            }}
             onSubmit={onCreateRoom}
+            style={{
+              borderRadius: "14px",
+              padding: "18px",
+              background: "#252525",
+              border: `1px solid ${C.cardBorder}`,
+            }}
           >
             <input
-              style={{ ...inputStyle, marginBottom: "8px" }}
-              placeholder="Nouveau salon"
+              placeholder="Nom du salon"
               value={newRoomName}
               onChange={(e) => setNewRoomName(e.target.value)}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                marginBottom: "10px",
+                padding: "12px 14px",
+                fontSize: "15px",
+                borderRadius: "10px",
+                border: `1px solid ${C.cardBorder}`,
+                background: C.bg,
+                color: C.white,
+                outline: "none",
+              }}
             />
             <input
-              style={{ ...inputStyle, marginBottom: "8px" }}
               placeholder="Description (optionnel)"
               value={newRoomDesc}
               onChange={(e) => setNewRoomDesc(e.target.value)}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                marginBottom: "14px",
+                padding: "12px 14px",
+                fontSize: "15px",
+                borderRadius: "10px",
+                border: `1px solid ${C.cardBorder}`,
+                background: C.bg,
+                color: C.white,
+                outline: "none",
+              }}
             />
-            <button type="submit" style={{ ...btnPrimary, width: "100%" }}>
-              Créer
+            <button
+              type="submit"
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                fontSize: "15px",
+                fontWeight: 600,
+                color: C.white,
+                background: C.primary,
+                border: "none",
+                borderRadius: "10px",
+                cursor: "pointer",
+              }}
+            >
+              Créer le salon
             </button>
           </form>
-        </div>
-        <div
-          style={{
-            flex: "2 1 320px",
-            minWidth: "280px",
-            border: "1px solid #dddddd",
-            borderRadius: "6px",
-            overflow: "hidden",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <div
-            style={{
-              padding: "10px 12px",
-              fontSize: "14px",
-              fontWeight: 600,
-              borderBottom: "1px solid #dddddd",
-              backgroundColor: "#f5f5f5",
-              color: "#000000",
-            }}
-          >
-            Conversation
-          </div>
-          <div style={{ padding: "16px", color: "#000000", fontSize: "14px" }}>
-            <p style={{ margin: 0, color: "#333333", lineHeight: 1.5 }}>
-              Sélectionne un salon à gauche ou crée-en un. Les URLs sont{" "}
-              <code style={{ backgroundColor: "#f0f0f0", padding: "2px 6px" }}>
-                /chat/rooms
-              </code>{" "}
-              et{" "}
-              <code style={{ backgroundColor: "#f0f0f0", padding: "2px 6px" }}>
-                /chat/room/:id
-              </code>
-              .
-            </p>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/**
- * Panneau mini-chat (auth REST + STOMP/SockJS).
- * Routes : /chat/login, /chat/register, /chat/rooms, /chat/room/:roomId
- */
 export function MiniChat() {
-  console.log("MiniChat rendered");
-
-  const {
-    isAuthenticated,
-    token,
-    username,
-    login,
-    register,
-    logout,
-  } = useAuth();
-
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<RoomDTO[]>([]);
   const [newRoomName, setNewRoomName] = useState("");
   const [newRoomDesc, setNewRoomDesc] = useState("");
-
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
   const [error, setError] = useState<string | null>(null);
 
   const loadRooms = useCallback(async () => {
-    if (!token) return;
-    const list = await fetchRooms();
-    setRooms(list);
-  }, [token]);
+    try {
+      const data = await fetchRooms();
+      setRooms(Array.isArray(data) ? data : []);
+    } catch {
+      setRooms([]);
+    }
+  }, []);
 
   useEffect(() => {
-    if (isAuthenticated) void loadRooms();
-  }, [isAuthenticated, loadRooms]);
-
-  const handleLogout = () => {
-    logout();
-    setRooms([]);
-    navigate("/chat/login", { replace: true });
-  };
-
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      await login(loginForm);
-      navigate("/chat/rooms", { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Connexion impossible");
-    }
-  };
-
-  const handleRegister = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      await register(registerForm);
-      navigate("/chat/rooms", { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Inscription impossible");
-    }
-  };
+    void loadRooms();
+  }, [loadRooms]);
 
   const handleCreateRoom = async (e: FormEvent) => {
     e.preventDefault();
@@ -677,250 +731,50 @@ export function MiniChat() {
     }
   };
 
-  const roomMatch = useMatch("/chat/room/:roomId");
-  const selectedFromPath = roomMatch?.params.roomId
-    ? Number.parseInt(roomMatch.params.roomId, 10)
-    : NaN;
-  const selectedRoomId = Number.isFinite(selectedFromPath)
-    ? selectedFromPath
-    : null;
-
   const goToRoom = (id: number) => {
     navigate(`/chat/room/${id}`);
   };
 
-  const sharedChatProps =
-    token && username
-      ? {
-          rooms,
-          selectedRoomId,
-          onSelectRoom: goToRoom,
-          newRoomName,
-          setNewRoomName,
-          newRoomDesc,
-          setNewRoomDesc,
-          onCreateRoom: handleCreateRoom,
-          error,
-          onLogout: handleLogout,
-          logoutLabel: username,
-        }
-      : null;
+  const sharedChatProps = {
+    rooms,
+    onSelectRoom: goToRoom,
+    newRoomName,
+    setNewRoomName,
+    newRoomDesc,
+    setNewRoomDesc,
+    onCreateRoom: handleCreateRoom,
+    error,
+  };
 
   return (
-    <Routes>
-      <Route path="/chat" element={<ChatShell />}>
-        <Route
-          index
-          element={
-            <Navigate
-              to={isAuthenticated ? "/chat/rooms" : "/chat/login"}
-              replace
-            />
-          }
-        />
-        <Route
-          path="login"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/chat/rooms" replace />
-            ) : (
-              <div
-                style={{
-                  maxWidth: 480,
-                  margin: "0 auto",
-                  padding: "24px 20px",
-                  backgroundColor: "#ffffff",
-                  color: "#000000",
-                }}
-              >
-                <h2 style={{ fontSize: "22px", margin: "0 0 16px", fontWeight: 600 }}>
-                  Mini-chat — connexion
-                </h2>
-                {error && (
-                  <div
-                    style={{
-                      padding: "10px 12px",
-                      marginBottom: "12px",
-                      backgroundColor: "#ffeeee",
-                      color: "#880000",
-                      border: "1px solid #cc6666",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {error}
-                  </div>
-                )}
-                <form
-                  onSubmit={handleLogin}
-                  style={{ marginBottom: "24px" }}
-                >
-                  <h3 style={{ fontSize: "16px", margin: "0 0 12px" }}>Login</h3>
-                  <div style={{ marginBottom: "10px" }}>
-                    <input
-                      style={inputStyle}
-                      placeholder="username"
-                      value={loginForm.username}
-                      onChange={(e) =>
-                        setLoginForm((f) => ({
-                          ...f,
-                          username: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div style={{ marginBottom: "12px" }}>
-                    <input
-                      type="password"
-                      style={inputStyle}
-                      placeholder="password"
-                      value={loginForm.password}
-                      onChange={(e) =>
-                        setLoginForm((f) => ({
-                          ...f,
-                          password: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <button type="submit" style={btnPrimary}>
-                    Se connecter
-                  </button>
-                </form>
-                <p style={{ fontSize: "14px", color: "#333333", margin: 0 }}>
-                  Pas de compte ?{" "}
-                  <button
-                    type="button"
-                    style={btnLink}
-                    onClick={() => navigate("/chat/register")}
-                  >
-                    S&apos;inscrire
-                  </button>
-                </p>
-              </div>
-            )
-          }
-        />
-        <Route
-          path="register"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/chat/rooms" replace />
-            ) : (
-              <div
-                style={{
-                  maxWidth: 480,
-                  margin: "0 auto",
-                  padding: "24px 20px",
-                  backgroundColor: "#ffffff",
-                  color: "#000000",
-                }}
-              >
-                <h2 style={{ fontSize: "22px", margin: "0 0 16px", fontWeight: 600 }}>
-                  Mini-chat — inscription
-                </h2>
-                {error && (
-                  <div
-                    style={{
-                      padding: "10px 12px",
-                      marginBottom: "12px",
-                      backgroundColor: "#ffeeee",
-                      color: "#880000",
-                      border: "1px solid #cc6666",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {error}
-                  </div>
-                )}
-                <form onSubmit={handleRegister}>
-                  <h3 style={{ fontSize: "16px", margin: "0 0 12px" }}>
-                    Inscription
-                  </h3>
-                  <div style={{ marginBottom: "10px" }}>
-                    <input
-                      style={inputStyle}
-                      placeholder="username"
-                      value={registerForm.username}
-                      onChange={(e) =>
-                        setRegisterForm((f) => ({
-                          ...f,
-                          username: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div style={{ marginBottom: "10px" }}>
-                    <input
-                      type="email"
-                      style={inputStyle}
-                      placeholder="email"
-                      value={registerForm.email}
-                      onChange={(e) =>
-                        setRegisterForm((f) => ({
-                          ...f,
-                          email: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div style={{ marginBottom: "12px" }}>
-                    <input
-                      type="password"
-                      style={inputStyle}
-                      placeholder="password (min 6)"
-                      value={registerForm.password}
-                      onChange={(e) =>
-                        setRegisterForm((f) => ({
-                          ...f,
-                          password: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <button type="submit" style={{ ...btnPrimary, marginRight: "12px" }}>
-                    S&apos;inscrire
-                  </button>
-                  <button
-                    type="button"
-                    style={btnLink}
-                    onClick={() => navigate("/chat/login")}
-                  >
-                    Déjà un compte ?
-                  </button>
-                </form>
-              </div>
-            )
-          }
-        />
+    <Routes basename="/chat">
+      <Route element={<ChatShell />}>
+        <Route index element={<Navigate to="rooms" replace />} />
         <Route
           path="rooms"
           element={
-            !isAuthenticated || !sharedChatProps || !token || !username ? (
-              <Navigate to="/chat/login" replace />
-            ) : (
-              <RoomsRoute {...sharedChatProps} />
-            )
+            <RoomsRoute
+              onSelectRoom={sharedChatProps.onSelectRoom}
+              newRoomName={sharedChatProps.newRoomName}
+              setNewRoomName={sharedChatProps.setNewRoomName}
+              newRoomDesc={sharedChatProps.newRoomDesc}
+              setNewRoomDesc={sharedChatProps.setNewRoomDesc}
+              onCreateRoom={sharedChatProps.onCreateRoom}
+              error={sharedChatProps.error}
+            />
           }
         />
         <Route
           path="room/:roomId"
           element={
-            !isAuthenticated || !sharedChatProps || !token || !username ? (
-              <Navigate to="/chat/login" replace />
-            ) : (
-              <RoomRoute
-                {...sharedChatProps}
-                token={token}
-                username={username}
-              />
-            )
+            <RoomRoute
+              rooms={sharedChatProps.rooms}
+              onSelectRoom={sharedChatProps.onSelectRoom}
+            />
           }
         />
+        <Route path="*" element={<Navigate to="/chat/rooms" replace />} />
       </Route>
-      <Route path="/" element={<Navigate to="/chat/login" replace />} />
-      <Route path="*" element={<Navigate to="/chat/login" replace />} />
     </Routes>
   );
 }

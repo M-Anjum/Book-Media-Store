@@ -2,6 +2,7 @@ package icc.web.book_media_store.module.mini_chat.config;
 
 import icc.web.book_media_store.infrastructure.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
@@ -29,6 +30,10 @@ public class MiniChatSecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/rooms").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/chat/**").permitAll()
 						.requestMatchers("/ws/**").permitAll()
 						.requestMatchers("/error").permitAll()
 						.anyRequest().authenticated())

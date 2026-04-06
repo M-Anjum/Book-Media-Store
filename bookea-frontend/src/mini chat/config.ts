@@ -1,10 +1,9 @@
 /**
- * Base HTTP : en dev, chaîne vide → URLs relatives `/api/...` (proxy Vite → 8080).
- * En prod ou si VITE_API_BASE_URL est défini : URL absolue.
+ * Base HTTP : Spring Boot sur http://localhost:8080.
+ * Surcharge possible avec VITE_API_BASE_URL.
  */
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  (import.meta.env.DEV ? "" : "http://localhost:8080");
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 /**
  * Origine pour SockJS/STOMP (hors proxy par défaut).

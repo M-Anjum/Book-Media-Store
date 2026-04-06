@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { MessageDTO } from "../types/chat.types";
 import { createChatStompClient } from "../websocket/createChatStompClient";
 
+/** SockJS utilise une URL HTTP(S) pour le handshake, pas ws:// — doit être http://localhost:8080/ws */
+const SOCKJS_HTTP_URL = "http://localhost:8080/ws";
+
 export function useStompChat(
   roomId: number | null,
   token: string | null,
@@ -19,17 +22,27 @@ export function useStompChat(
 
   useEffect(() => {
     setMessages([]);
-    if (roomId == null || !token || !username) {
+    if (roomId == null || !username) {
       setConnected(false);
       return;
     }
 
-    const client = createChatStompClient(token);
+    const client = createChatStompClient(token, SOCKJS_HTTP_URL);
     clientRef.current = client;
 
+    client.onStompError = (frame) => {
+      console.error("STOMP connection error:", frame);
+    };
+
+    client.onWebSocketError = (event) => {
+      console.error("STOMP connection error:", event);
+    };
+
     client.onConnect = () => {
+      console.log("STOMP connected successfully!");
       setConnected(true);
-      client.subscribe(`/topic/room/${roomId}`, (message) => {
+      const topicPath = `/topic/room/${roomId}`;
+      client.subscribe(topicPath, (message) => {
         try {
           const parsed = JSON.parse(message.body) as MessageDTO;
           setMessages((prev) => [...prev, parsed]);
@@ -37,10 +50,12 @@ export function useStompChat(
           /* ignore */
         }
       });
+      console.log("Subscribed to:", "/topic/room/" + roomId);
     };
 
     client.onDisconnect = () => setConnected(false);
 
+    console.log("Connecting STOMP to roomId:", roomId);
     client.activate();
 
     return () => {
@@ -60,8 +75,9 @@ export function useStompChat(
         roomId,
         type: "CHAT",
       };
+      const destination = `/app/chat.send/${roomId}`;
       client.publish({
-        destination: `/app/chat.send/${roomId}`,
+        destination,
         body: JSON.stringify(payload),
       });
     },

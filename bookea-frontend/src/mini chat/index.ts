@@ -4,7 +4,7 @@ export * from "./api/authApi";
 export * from "./api/roomsApi";
 export * from "./types/chat.types";
 export { createChatStompClient } from "./websocket/createChatStompClient";
-export { useAuth } from "./hooks/useAuth";
+export { username } from "./hooks/useAuth";
 export { useStompChat } from "./hooks/useStompChat";
 export { MessageList } from "./components/MessageList";
 export { MiniChat } from "./MiniChat";

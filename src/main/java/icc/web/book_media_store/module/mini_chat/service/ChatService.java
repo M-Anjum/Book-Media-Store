@@ -13,6 +13,7 @@ import icc.web.book_media_store.module.mini_chat.repository.RoomRepository;
 import icc.web.book_media_store.module.mini_chat.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +27,17 @@ public class ChatService {
 	private final MessageRepository messageRepository;
 	private final RoomRepository roomRepository;
 	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	public ChatService(
 			MessageRepository messageRepository,
 			RoomRepository roomRepository,
-			UserRepository userRepository) {
+			UserRepository userRepository,
+			PasswordEncoder passwordEncoder) {
 		this.messageRepository = messageRepository;
 		this.roomRepository = roomRepository;
 		this.userRepository = userRepository;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Transactional
@@ -42,8 +46,7 @@ public class ChatService {
 		if (content.length() > 500) {
 			throw new BusinessException(ErrorCode.VALIDATION_ERROR);
 		}
-		User sender = userRepository.findByUsername(dto.getSenderUsername())
-				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+		User sender = findOrCreateSender(dto.getSenderUsername());
 		Room room = roomRepository.findById(dto.getRoomId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 		MessageType type = parseType(dto.getType());
@@ -88,6 +91,20 @@ public class ChatService {
 		return roomRepository.findAll().stream()
 				.map(this::toRoomDto)
 				.toList();
+	}
+
+	private User findOrCreateSender(String senderUsername) {
+		if (senderUsername == null || senderUsername.isBlank()) {
+			throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+		}
+		return userRepository.findByUsername(senderUsername).orElseGet(() -> {
+			User guest = User.builder()
+					.username(senderUsername)
+					.password(passwordEncoder.encode("guest"))
+					.email(senderUsername + "@guest.com")
+					.build();
+			return userRepository.save(guest);
+		});
 	}
 
 	private MessageType parseType(String type) {
