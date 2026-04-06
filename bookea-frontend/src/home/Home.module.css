@@ -2,7 +2,7 @@
     padding-bottom: 4rem;
 }
 
-/* Hero Section style Streaming */
+/* --- HERO BANNER (Ton style Netflix) --- */
 .hero {
     height: 400px;
     background: linear-gradient(to right, rgba(20, 20, 20, 0.9), rgba(20, 20, 20, 0.2)),
@@ -10,7 +10,7 @@
     display: flex;
     align-items: center;
     padding: 0 5%;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .heroContent h1 {
@@ -18,15 +18,17 @@
     font-weight: 900;
     margin: 0;
     letter-spacing: 2px;
+    color: #ffffff;
 }
 
 .heroContent p {
     font-size: 1.2rem;
     max-width: 600px;
     color: #e5e5e5;
+    margin-top: 1rem;
 }
 
-/* Grille et Cartes */
+/* --- SECTION PRODUITS --- */
 .productSection {
     padding: 0 5%;
 }
@@ -35,31 +37,37 @@
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
     color: #e5e5e5;
+    font-weight: 800;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Un peu plus large pour que ça respire */
+    gap: 2rem; /* Gap augmenté pour que l'ombre au hover ne coupe pas les autres cartes */
 }
 
+/* --- CARTE HYBRIDE (Ton design sombre + Ma structure Flexbox) --- */
 .card {
-    background: #1f1f1f; /* Gris Netflix */
-    border-radius: 4px;
+    background: #1f1f1f; /* Ton Gris Netflix */
+    border-radius: 6px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
     position: relative;
+    /* La magie Flexbox pour aligner le bouton en bas : */
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
     transform: scale(1.05);
     z-index: 10;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
 }
 
+/* Zone Image */
 .imageBox {
-    height: 150px;
+    height: 180px;
     background: #2f2f2f;
     position: relative;
     display: flex;
@@ -73,66 +81,89 @@
     object-fit: cover;
 }
 
+.placeholder {
+    color: #555;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* Badges de catégorie */
 .typeBadge {
     position: absolute;
     top: 10px;
     left: 10px;
     font-size: 0.65rem;
     font-weight: 800;
-    padding: 2px 8px;
+    padding: 4px 8px;
     border-radius: 2px;
     text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-/* Couleurs par type */
-.book { background: #e50914; color: white; }      /* Rouge Netflix */
-.computer { background: #0071eb; color: white; }  /* Bleu Tech */
-.hifi { background: #00a8e1; color: white; }      /* Cyan */
+/* Tes couleurs par type */
+.badgeLivre { background: #e50914; color: white; }      /* Rouge Netflix */
+.badgeInfo { background: #0071eb; color: white; }       /* Bleu Tech */
+.badgeHifi { background: #00a8e1; color: white; }       /* Cyan */
 
+/* Informations texte */
 .info {
-    padding: 1rem;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Pousse le reste vers le bas */
 }
 
 .info h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
     margin: 0 0 0.5rem 0;
-    white-space: nowrap;
+    color: #ffffff;
+    /* Coupe proprement sur 2 lignes max au lieu du nowrap */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .description {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #a3a3a3;
-    height: 40px;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+    /* Coupe proprement sur 3 lignes max */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-bottom: 1rem;
 }
 
+/* Footer de la carte */
 .footerCard {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: auto; /* Coller en bas */
 }
 
 .price {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    color: #ffffff;
 }
 
+/* Bouton */
 .addBtn {
     background: white;
     color: black;
     border: none;
-    padding: 5px 15px;
+    padding: 8px 16px;
     border-radius: 4px;
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: background-color 0.2s;
 }
 
-.addBtn:hover {
+.addBtn:hover:not(:disabled) {
     background: #e5e5e5;
 }
 
