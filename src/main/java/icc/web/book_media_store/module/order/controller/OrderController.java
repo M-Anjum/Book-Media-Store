@@ -2,7 +2,6 @@ package icc.web.book_media_store.module.order.controller;
 
 import java.security.Principal;
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,10 +25,11 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
-    // --- ENDPOINTS UTILISATEUR ---
+    // --- ACCÈS UTILISATEUR CONNECTÉ ---
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> placeOrder(@RequestBody OrderRequest request, Principal principal) {
+        // principal.getName() récupère le login de l'user connecté
         Order order = orderService.createOrder(request, principal.getName());
         return new ResponseEntity<>(orderMapper.toDto(order), HttpStatus.CREATED);
     }
@@ -46,7 +46,7 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- ENDPOINTS ADMIN ---
+    // --- ACCÈS ADMIN UNIQUEMENT ---
 
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
@@ -55,14 +55,10 @@ public class OrderController {
         return ResponseEntity.ok(orders.map(orderMapper::toDto));
     }
 
-    /**
-     * Endpoint pour voir uniquement les archives (Soft Deleted)
-     */
     @GetMapping("/admin/archived")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderResponseDto>> getArchivedOrders() {
-        List<Order> orders = orderService.getDeletedOrders();
-        return ResponseEntity.ok(orderMapper.toDtoList(orders));
+        return ResponseEntity.ok(orderMapper.toDtoList(orderService.getDeletedOrders()));
     }
 
     @PatchMapping("/admin/{id}/status")
@@ -77,8 +73,7 @@ public class OrderController {
     @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id, Principal principal) {
-        // IMPORTANT : On passe principal.getName() pour savoir quel admin a fait
-        // l'action
+        // On log qui a fait la suppression via principal.getName()
         orderService.deleteOrder(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
