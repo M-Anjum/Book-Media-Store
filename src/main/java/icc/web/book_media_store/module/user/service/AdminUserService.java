@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,21 +33,25 @@ public class AdminUserService {
     }
 
     private AdminUserResponse toResponse(User user) {
-        return new AdminUserResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getBirthDate(),
-                user.getAddress(),
-                user.getPostalCode(),
-                user.getPhone(),
-                user.getAvatarUrl(),
-                user.getRole().name(),
-                user.isActive(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
-    }
+    String roles = user.getRoles().stream()
+            .map(Enum::name)
+            .collect(Collectors.joining(", "));
+
+    return new AdminUserResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getBirthDate(),
+            user.getAddress(),
+            user.getPostalCode(),
+            user.getPhone(),
+            user.getAvatarUrl(),
+            roles,
+            user.isActive(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+    );
+}
 }
