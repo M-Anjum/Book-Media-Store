@@ -3,66 +3,87 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 5%;
-    height: 70px;
-    background-color: #0f172a; /* Navy très sombre */
-    color: white;
+    height: 80px; /* Un peu plus haut pour le confort */
+    background-color: var(--bookea-black); /* Ton noir #111111 */
+    color: var(--bookea-white);
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .logo a {
     text-decoration: none;
-    color: white;
-    font-size: 1.5rem;
+    color: var(--bookea-white);
+    font-size: 1.6rem;
     font-weight: 800;
     letter-spacing: -1px;
 }
     
 .logo span {
-    color:  #E8520A; /* Bleu électrique */
+    color: var(--bookea-orange); /* Ton orange #E8520A */
 }
 
 .navLinks {
     display: flex;
     list-style: none;
-    gap: 2.5rem;
+    gap: 2rem;
+    align-items: center;
 }
 
 .navLinks a {
     text-decoration: none;
-    color: #94a3b8;
+    color: var(--bookea-border); /* Un gris clair pour le contraste */
     font-weight: 500;
     font-size: 0.95rem;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    padding: 5px 0;
 }
 
-.navLinks a:hover, .active {
-    color: #ffffff !important;
+/* État Hover et Page Active */
+.navLinks a:hover, 
+.active {
+    color: var(--bookea-orange) !important;
+    border-bottom: 2px solid var(--bookea-orange);
 }
 
+/* Style spécifique pour les liens Admin */
 .adminLink {
-    color: #f87171 !important; /* Rouge doux pour l'admin */
+    color: var(--bookea-orange-light) !important; /* Plus doux pour ne pas agresser */
+    border: 1px solid var(--bookea-orange);
+    padding: 6px 12px !important;
+    border-radius: 6px;
 }
 
+.adminLink:hover {
+    background-color: var(--bookea-orange);
+    color: var(--bookea-white) !important;
+}
+
+/* Bouton Panier */
 .cartButton {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background-color: #2563eb;
-    padding: 0.6rem 1.2rem;
+    background-color: var(--bookea-orange);
+    padding: 0.7rem 1.4rem;
     border-radius: 8px;
     text-decoration: none;
     color: white;
-    font-weight: 600;
-    transition: background 0.3s;
+    font-weight: 700;
+    transition: transform 0.2s, background 0.3s;
 }
 
 .cartButton:hover {
-    background-color: #1d4ed8;
+    background-color: var(--bookea-orange-hover);
+    transform: scale(1.05);
 }
 
+.cartIcon {
+    font-size: 1.2rem;
+}
+
+/* Badge de notification panier */
 .badge {
     background-color: #ef4444;
     color: white;
@@ -102,4 +123,15 @@
 .registerButton:hover {
   background: #C94409;
   color: #fff;
+    background-color: var(--bookea-white);
+    color: var(--bookea-orange);
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

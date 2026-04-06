@@ -1,0 +1,9 @@
+.card { background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--bookea-border); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.title { text-align: center; color: var(--bookea-black); text-transform: uppercase; margin-bottom: 2rem; font-weight: 800; }
+.typeSelector { margin-bottom: 20px; padding: 15px; background: var(--bookea-bg); border-radius: 8px; }
+.typeSelector label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.8rem; text-transform: uppercase; }
+.typeSelector select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--bookea-border); }
+.row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+.row input { padding: 12px; border: 1px solid var(--bookea-border); border-radius: 6px; }
+.submitBtn { width: 100%; background: var(--bookea-orange); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+.submitBtn:hover { background: var(--bookea-orange-hover); }

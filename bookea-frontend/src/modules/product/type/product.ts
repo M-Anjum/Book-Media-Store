@@ -33,15 +33,16 @@ export interface HifiRequest extends BaseProductRequest {
 
 // Interface de réponse générique
 export interface ProductResponse extends BaseProductRequest {
-    id: number;
-    type: ProductType;
-    // Champs optionnels car dépendent du type reçu
-    author?: string;
-    pageCount?: number;
-    category?: BookCategory;
-    brand?: string;
-    processor?: string;
-    ramSize?: number;
-    model?: string;
-    powerWatts?: number;
+  id: number;
+  type: ProductType;
+  // Champs optionnels car dépendent du type reçu
+  author?: string;
+  pageCount?: number;
+  category?: BookCategory;
+  description?: string;
+  brand?: string;
+  processor?: string;
+  ramSize?: number;
+  model?: string;
+  powerWatts?: number;
 }
