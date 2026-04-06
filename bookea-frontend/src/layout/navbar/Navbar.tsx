@@ -11,6 +11,10 @@ const Navbar: React.FC = () => {
   // Vérifie si une session est active via le cookie JSESSIONID
   const isAuthenticated = document.cookie.includes("JSESSIONID");
 
+<<<<<<< Updated upstream
+=======
+  // Utilitaire pour gérer l'état actif des liens
+>>>>>>> Stashed changes
   const isActive = (path: string) =>
     location.pathname === path ? styles.active : "";
 
@@ -35,12 +39,30 @@ const Navbar: React.FC = () => {
         <li>
           <Link to="/orders/me" className={isActive("/orders/me")}>Mes Commandes</Link>
         </li>
+
+        {/* --- ESPACE ADMIN --- */}
         <li>
+<<<<<<< Updated upstream
           <Link to="/profile" className={isActive("/profile")}>Mon Profil</Link>
         </li>
         <li>
           <Link to="/admin/orders" className={`${styles.adminLink} ${isActive("/admin/orders")}`}>
             Admin
+=======
+          <Link
+            to="/admin/orders"
+            className={`${styles.adminLink} ${isActive("/admin/orders")}`}
+          >
+            Commandes Admin
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/admin/add-product"
+            className={`${styles.adminLink} ${isActive("/admin/add-product")}`}
+          >
+            + Ajouter Produit
+>>>>>>> Stashed changes
           </Link>
         </li>
       </ul>
