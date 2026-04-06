@@ -62,76 +62,87 @@
 
 /* Bouton Panier */
 .cartButton {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background-color: var(--bookea-orange);
-    padding: 0.7rem 1.4rem;
-    border-radius: 8px;
-    text-decoration: none;
-    color: white;
-    font-weight: 700;
-    transition: transform 0.2s, background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid #E8520A;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #E8520A;
+  font-weight: 700;
+  transition: padding 0.25s ease, gap 0.25s ease, background 0.2s;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .cartButton:hover {
-    background-color: var(--bookea-orange-hover);
-    transform: scale(1.05);
+  background-color: rgba(232, 82, 10, 0.15);
+  padding: 0.6rem 1.2rem;
+  gap: 0.6rem;
 }
 
-.cartIcon {
-    font-size: 1.2rem;
-}
-
-/* Badge de notification panier */
-.badge {
-    background-color: #ef4444;
-    color: white;
-    font-size: 0.75rem;
-    padding: 0.1rem 0.5rem;
-    border-radius: 4px;
-    min-width: 18px;
-    text-align: center;
+.cartButton:hover .cartText {
+  max-width: 60px;
+  opacity: 1;
 }
 
 .authLink {
   font-size: 14px;
-  color: #fff;
+  color: #E8520A;
   text-decoration: none;
-  padding: 6px 14px;
-  background: #E8520A;
-  border: none;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1.5px solid #E8520A;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 500;
 }
 
 .authLink:hover {
-  background: #C94409;
+  background: #E8520A;
   color: #fff;
 }
 
 .registerButton {
   font-size: 14px;
-  color: #fff;
+  color: #E8520A;
   text-decoration: none;
-  padding: 6px 14px;
-  background: #E8520A;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1.5px solid #E8520A;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .registerButton:hover {
-  background: #C94409;
+  background: #E8520A;
   color: #fff;
-    background-color: var(--bookea-white);
-    color: var(--bookea-orange);
-    font-size: 0.8rem;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+
+
+
+.cartIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.cartText {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  font-size: 0.9rem;
+  transition: max-width 0.25s ease, opacity 0.2s ease;
+}
+
