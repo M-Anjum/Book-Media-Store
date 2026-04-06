@@ -15,6 +15,7 @@ public record AdminUserResponse(
         String phone,
         String avatarUrl,
         String role,
+        boolean active,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}
