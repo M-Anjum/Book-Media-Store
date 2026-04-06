@@ -13,6 +13,8 @@ import icc.web.book_media_store.module.order.model.Order;
 import icc.web.book_media_store.module.order.model.OrderItem;
 import icc.web.book_media_store.module.order.model.OrderStatus;
 import icc.web.book_media_store.module.order.repository.OrderRepository;
+import icc.web.book_media_store.module.product.model.Product;
+import icc.web.book_media_store.module.product.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
