@@ -43,22 +43,27 @@ const Navbar: React.FC = () => {
       </ul>
 
       <div className={styles.actions}>
-        {isAuthenticated ? (
-          <button onClick={handleLogout} className={styles.registerButton}>
-            Déconnexion
-          </button>
-        ) : (
-          <>
-            <Link to="/login" className={styles.authLink}>Connexion</Link>
-            <Link to="/register" className={styles.registerButton}>S'inscrire</Link>
-          </>
-        )}
-        <Link to="/cart" className={styles.cartButton}>
-          <span className={styles.cartIcon}>🛒</span>
-          Panier
-          {itemCount > 0 && <span className={styles.badge}>{itemCount}</span>}
-        </Link>
-      </div>
+  {isAuthenticated ? (
+    <button onClick={handleLogout} className={styles.registerButton}>
+      Déconnexion
+    </button>
+  ) : (
+    <>
+      <Link to="/login" className={styles.authLink}>
+        Connexion
+      </Link>
+      <Link to="/register" className={styles.registerButton}>
+        S'inscrire
+      </Link>
+    </>
+  )}
+
+  <Link to="/cart" className={styles.cartButton}>
+  <span className={styles.cartIcon}>🛒</span>
+  <span className={styles.cartText}>Panier</span>
+  {itemCount > 0 && <span className={styles.badge}>{itemCount}</span>}
+</Link>
+</div>
     </nav>
   );
 };
