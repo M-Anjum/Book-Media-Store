@@ -1,18 +1,21 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  define: {
-    global: 'globalThis',
-  },
   server: {
     port: 3000,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      // Cette règle couvre désormais /api/shows, /api/users/login, /api/users/profile, etc.
+      '/api': { 
+        target: 'http://localhost:3000', 
         changeOrigin: true,
+        secure: false 
       },
-    },
-  },
-})
+      '/uploads': { 
+        target: 'http://localhost:3000', 
+        changeOrigin: true 
+      }
+    }
+  }
+});

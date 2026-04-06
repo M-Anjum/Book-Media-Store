@@ -1,14 +1,17 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import MiniChat from "./mini chat/MiniChat";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { UserProfilePage} from "./modules/user";
+import { LoginPage } from "./modules/auth";
+// Les autres pages suivront...
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/chat/*" element={<MiniChat />} />
-        <Route path="*" element={<Navigate to="/chat/rooms" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
 
