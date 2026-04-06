@@ -85,7 +85,6 @@
 
 /* Badge de notification panier */
 .badge {
-<<<<<<< Updated upstream
     background-color: #ef4444;
     color: white;
     font-size: 0.75rem;
@@ -124,7 +123,6 @@
 .registerButton:hover {
   background: #C94409;
   color: #fff;
-=======
     background-color: var(--bookea-white);
     color: var(--bookea-orange);
     font-size: 0.8rem;
@@ -136,5 +134,4 @@
     display: flex;
     align-items: center;
     justify-content: center;
->>>>>>> Stashed changes
 }
