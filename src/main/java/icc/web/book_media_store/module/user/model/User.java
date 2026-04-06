@@ -48,6 +48,9 @@ public class User {
     @Column(nullable = false, length = 10)
     private String postalCode;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
     private String phone;
 
     private String avatarUrl;

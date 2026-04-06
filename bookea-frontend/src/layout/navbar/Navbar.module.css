@@ -72,3 +72,34 @@
     min-width: 18px;
     text-align: center;
 }
+
+.authLink {
+  font-size: 14px;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 14px;
+  background: #E8520A;
+  border: none;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.authLink:hover {
+  background: #C94409;
+  color: #fff;
+}
+
+.registerButton {
+  font-size: 14px;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 14px;
+  background: #E8520A;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.registerButton:hover {
+  background: #C94409;
+  color: #fff;
+}

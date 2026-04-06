@@ -32,6 +32,7 @@ import { BlogDetailPage } from "./modules/blog/pages/BlogDetailPage";
 import { LoginPage } from "./modules/auth";
 import { RegisterPage } from "./modules/user/pages";
 import { UserProfilePage } from "./modules/user";
+import AdminUsersPage from "./modules/admin/pages/AdminUserPage";
 import Legal from "./legal/Legal";
 import About from "./About/About";
 import OrderForm from "./order/page/order-form/OrderForm";
@@ -68,6 +69,7 @@ const App: React.FC = () => {
               {/* --- ADMIN COMMANDES --- */}
               <Route path="/admin/add-product" element={<AdminProductPage />} />
               <Route path="/admin/orders" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route
                 path="/admin/orders/archived"
                 element={<AdminArchived />}

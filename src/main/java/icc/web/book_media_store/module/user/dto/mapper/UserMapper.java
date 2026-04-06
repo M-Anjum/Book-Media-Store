@@ -39,6 +39,7 @@ public interface UserMapper {
     @Mapping(target = "roles", ignore = true) // Géré manuellement dans le service ou via @Builder.Default
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "phone", ignore = true) 
     User toEntity(RegisterRequest request);
 
     // --- LOGIQUE DE MAPPING PERSONNALISÉE ---
