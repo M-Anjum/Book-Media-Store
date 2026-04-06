@@ -31,6 +31,7 @@ public class SpringSecurityConfig {
                                 // Règles d'accès minimales
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/user/register").permitAll() 
                                                 .requestMatchers("/error").permitAll()
                                                 .anyRequest().authenticated())
 
