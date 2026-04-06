@@ -9,6 +9,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @Controller
 public class ChatController {
 
@@ -21,8 +23,12 @@ public class ChatController {
 	}
 
 	@MessageMapping("/chat.send/{roomId}")
-	public void sendMessage(@DestinationVariable Long roomId, @Payload MessageDTO message) {
+	public void sendMessage(
+			@DestinationVariable Long roomId,
+			@Payload MessageDTO message,
+			Principal principal) {
 		message.setRoomId(roomId);
+		message.setSenderUsername(principal.getName());
 		if (message.getType() == null || message.getType().isBlank()) {
 			message.setType(MessageType.CHAT.name());
 		}
@@ -31,8 +37,12 @@ public class ChatController {
 	}
 
 	@MessageMapping("/chat.join/{roomId}")
-	public void join(@DestinationVariable Long roomId, @Payload MessageDTO message) {
+	public void join(
+			@DestinationVariable Long roomId,
+			@Payload MessageDTO message,
+			Principal principal) {
 		message.setRoomId(roomId);
+		message.setSenderUsername(principal.getName());
 		message.setType(MessageType.JOIN.name());
 		if (message.getContent() == null || message.getContent().isBlank()) {
 			message.setContent("a rejoint la salle");

@@ -31,7 +31,7 @@ public class Message {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, length = 4000)
+	@Column(length = 500, nullable = false)
 	private String content;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)

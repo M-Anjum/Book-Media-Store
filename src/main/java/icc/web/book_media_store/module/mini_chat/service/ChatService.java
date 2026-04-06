@@ -11,9 +11,13 @@ import icc.web.book_media_store.module.mini_chat.model.User;
 import icc.web.book_media_store.module.mini_chat.repository.MessageRepository;
 import icc.web.book_media_store.module.mini_chat.repository.RoomRepository;
 import icc.web.book_media_store.module.mini_chat.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -34,13 +38,17 @@ public class ChatService {
 
 	@Transactional
 	public MessageDTO saveMessage(MessageDTO dto) {
+		String content = dto.getContent() != null ? dto.getContent() : "";
+		if (content.length() > 500) {
+			throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+		}
 		User sender = userRepository.findByUsername(dto.getSenderUsername())
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 		Room room = roomRepository.findById(dto.getRoomId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 		MessageType type = parseType(dto.getType());
 		Message message = Message.builder()
-				.content(dto.getContent() != null ? dto.getContent() : "")
+				.content(content)
 				.sender(sender)
 				.room(room)
 				.type(type)
@@ -53,7 +61,11 @@ public class ChatService {
 	public List<MessageDTO> getMessagesByRoom(Long roomId) {
 		Room room = roomRepository.findById(roomId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
-		return messageRepository.findByRoomOrderBySentAtAsc(room).stream()
+		Page<Message> page = messageRepository.findByRoomOrderBySentAtDesc(room, Pageable.ofSize(10));
+		List<Message> lastTenDesc = page.getContent();
+		List<Message> lastTenAsc = new ArrayList<>(lastTenDesc);
+		Collections.reverse(lastTenAsc);
+		return lastTenAsc.stream()
 				.map(this::toDto)
 				.toList();
 	}

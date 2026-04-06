@@ -35,6 +35,7 @@ public class RoomController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(created);
 	}
 
+	/** Last 10 messages for the room (chronological), via ChatService.getMessagesByRoom. */
 	@GetMapping("/{roomId}/messages")
 	public ResponseEntity<List<MessageDTO>> getMessagesByRoom(@PathVariable Long roomId) {
 		return ResponseEntity.ok(chatService.getMessagesByRoom(roomId));

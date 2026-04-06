@@ -1,13 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-// Les autres pages suivront...
+import { BrowserRouter } from 'react-router-dom'
+import MiniChat from './mini chat/MiniChat'
 
 function App() {
   return (
-    <Router>
-    
-    </Router>
-  );
+    <BrowserRouter>
+      <MiniChat />
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
