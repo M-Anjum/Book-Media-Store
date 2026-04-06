@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Import du style global (celui avec ton Reset et ton Noir Netflix)
 import './App.css'; 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { UserProfilePage} from "./modules/user";
+import { LoginPage } from "./modules/auth";
+// Les autres pages suivront...
 
 // Context Provider pour la gestion du panier
 import { CartProvider } from './order/cart/CartContext';
@@ -52,6 +56,13 @@ const App: React.FC = () => {
         </div>
       </Router>
     </CartProvider>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 };
 

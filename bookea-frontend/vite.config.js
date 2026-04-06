@@ -8,12 +8,12 @@ export default defineConfig({
     proxy: {
       // Cette règle couvre désormais /api/shows, /api/users/login, /api/users/profile, etc.
       '/api': { 
-        target: 'http://localhost:8080', 
+        target: 'http://localhost:3000', 
         changeOrigin: true,
         secure: false 
       },
       '/uploads': { 
-        target: 'http://localhost:8080', 
+        target: 'http://localhost:3000', 
         changeOrigin: true 
       }
     }
