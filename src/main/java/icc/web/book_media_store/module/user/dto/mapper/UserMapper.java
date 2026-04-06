@@ -15,7 +15,6 @@ public interface UserMapper {
     UserProfileResponse toResponse(User user);
 
     // UpdateProfileRequest → AppUser (pour la mise à jour)
-    // On ignore les champs gérés par Hibernate ou la sécurité
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "avatarUrl", ignore = true)
