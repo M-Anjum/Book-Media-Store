@@ -32,7 +32,7 @@ public class SpringSecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/error").permitAll()
-                                                .anyRequest().authenticated())
+                                                .anyRequest().permitAll())
 
                                 // Login silencieux (Statut 200 uniquement, pas de texte)
                                 .formLogin(form -> form
