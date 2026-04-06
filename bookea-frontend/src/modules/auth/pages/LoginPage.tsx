@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { authService } from "../services";
+
+type View = "login" | "forgot";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const registered = (location.state as { registered?: boolean })?.registered;
+
+  const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
@@ -23,44 +31,151 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    try {
+      // TODO: brancher sur POST /api/auth/forgot-password
+      await new Promise((r) => setTimeout(r, 800)); // simulation
+      setSuccess("Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.");
+    } catch {
+      setError("Une erreur est survenue. Veuillez réessayer.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="container py-5" style={{ maxWidth: 400 }}>
-      <h1 className="h4 fw-bold mb-4 text-center">Connexion</h1>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-background-tertiary)", padding: "2rem 1rem" }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
 
-      {error && <div className="alert alert-danger py-2">{error}</div>}
-
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input
-            type="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoFocus
-          />
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <Link to="/" style={{ fontSize: 24, fontWeight: 500, color: "#E8520A", textDecoration: "none" }}>Bookea</Link>
         </div>
 
-        <div className="mb-4">
-          <label className="form-label">Mot de passe</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <div style={{ background: "#fff", border: "0.5px solid #e5e5e5", borderRadius: 12, padding: "2rem" }}>
 
-        <button
-          type="submit"
-          className="btn btn-primary w-100"
-          disabled={isLoading}
-        >
-          {isLoading ? "Connexion…" : "Se connecter"}
-        </button>
-      </form>
+          {/* ── LOGIN VIEW ───────────────────────── */}
+          {view === "login" && (
+            <>
+              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: "1.5rem", textAlign: "center" }}>
+                Connexion
+              </h1>
+
+              {registered && (
+                <div style={{ background: "#EAF3DE", color: "#3B6D11", padding: "10px 14px", borderRadius: 8, marginBottom: "1rem", fontSize: 13 }}>
+                  Compte créé avec succès ! Vous pouvez vous connecter.
+                </div>
+              )}
+
+              {error && (
+                <div style={{ background: "#FCEBEB", color: "#A32D2D", padding: "10px 14px", borderRadius: 8, marginBottom: "1rem", fontSize: 13 }}>
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} noValidate>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Email <span style={{ color: "#E8520A" }}>*</span></label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="john@exemple.com" required style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = "#E8520A"}
+                    onBlur={e => e.target.style.borderColor = "#ddd"} />
+                </div>
+
+                <div style={{ marginBottom: 8 }}>
+                  <label style={labelStyle}>Mot de passe <span style={{ color: "#E8520A" }}>*</span></label>
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••" required style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = "#E8520A"}
+                    onBlur={e => e.target.style.borderColor = "#ddd"} />
+                </div>
+
+                {/* Mot de passe oublié */}
+                <div style={{ textAlign: "right", marginBottom: "1.5rem" }}>
+                  <button type="button" onClick={() => { setView("forgot"); setError(null); }}
+                    style={{ background: "none", border: "none", color: "#E8520A", fontSize: 13, cursor: "pointer", padding: 0 }}>
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+
+                <button type="submit" disabled={isLoading} style={btnPrimaryStyle(isLoading)}>
+                  {isLoading ? "Connexion…" : "Se connecter"}
+                </button>
+              </form>
+
+              <p style={{ textAlign: "center", fontSize: 13, color: "#666", marginTop: "1.25rem" }}>
+                Pas encore de compte ?{" "}
+                <Link to="/register" style={{ color: "#E8520A", textDecoration: "none", fontWeight: 500 }}>
+                  S'inscrire
+                </Link>
+              </p>
+            </>
+          )}
+
+          {/* ── FORGOT VIEW ──────────────────────── */}
+          {view === "forgot" && (
+            <>
+              <button type="button" onClick={() => { setView("login"); setError(null); setSuccess(null); }}
+                style={{ background: "none", border: "none", color: "#666", fontSize: 13, cursor: "pointer", padding: 0, marginBottom: "1rem", display: "flex", alignItems: "center", gap: 4 }}>
+                ← Retour
+              </button>
+
+              <h1 style={{ fontSize: 18, fontWeight: 500, marginBottom: 8, textAlign: "center" }}>
+                Mot de passe oublié
+              </h1>
+              <p style={{ fontSize: 13, color: "#666", textAlign: "center", marginBottom: "1.5rem" }}>
+                Entrez votre email pour recevoir un lien de réinitialisation.
+              </p>
+
+              {error && (
+                <div style={{ background: "#FCEBEB", color: "#A32D2D", padding: "10px 14px", borderRadius: 8, marginBottom: "1rem", fontSize: 13 }}>
+                  {error}
+                </div>
+              )}
+
+              {success ? (
+                <div style={{ background: "#EAF3DE", color: "#3B6D11", padding: "14px", borderRadius: 8, fontSize: 13, textAlign: "center" }}>
+                  {success}
+                </div>
+              ) : (
+                <form onSubmit={handleForgot} noValidate>
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <label style={labelStyle}>Adresse email <span style={{ color: "#E8520A" }}>*</span></label>
+                    <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
+                      placeholder="john@exemple.com" required style={inputStyle}
+                      onFocus={e => e.target.style.borderColor = "#E8520A"}
+                      onBlur={e => e.target.style.borderColor = "#ddd"} />
+                  </div>
+                  <button type="submit" disabled={isLoading} style={btnPrimaryStyle(isLoading)}>
+                    {isLoading ? "Envoi…" : "Envoyer le lien"}
+                  </button>
+                </form>
+              )}
+            </>
+          )}
+
+        </div>
+      </div>
     </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  display: "block", fontSize: 12, fontWeight: 500, color: "#555", marginBottom: 4
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%", height: 38, padding: "0 10px",
+  border: "0.5px solid #ddd", borderRadius: 8,
+  fontSize: 14, outline: "none", transition: "border-color .2s",
+  boxSizing: "border-box"
+};
+
+const btnPrimaryStyle = (disabled: boolean): React.CSSProperties => ({
+  width: "100%", height: 40, background: disabled ? "#ccc" : "#E8520A",
+  color: "#fff", border: "none", borderRadius: 8,
+  fontSize: 14, fontWeight: 500, cursor: disabled ? "not-allowed" : "pointer"
+});
