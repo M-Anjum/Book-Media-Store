@@ -1,15 +1,24 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../../order/cart/CartContext";
 import styles from "./Navbar.module.css";
 
 const Navbar: React.FC = () => {
   const { itemCount } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Petit utilitaire pour savoir quelle page est active
+  // Vérifie si une session est active via le cookie JSESSIONID
+  const isAuthenticated = document.cookie.includes("JSESSIONID");
+
   const isActive = (path: string) =>
     location.pathname === path ? styles.active : "";
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    navigate("/login");
+    window.location.reload();
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -21,26 +30,36 @@ const Navbar: React.FC = () => {
 
       <ul className={styles.navLinks}>
         <li>
-          <Link to="/" className={isActive("/")}>
-            Accueil
-          </Link>
+          <Link to="/" className={isActive("/")}>Accueil</Link>
         </li>
         <li>
-          <Link to="/orders/me" className={isActive("/orders/me")}>
-            Mes Commandes
-          </Link>
+          <Link to="/orders/me" className={isActive("/orders/me")}>Mes Commandes</Link>
         </li>
         <li>
-          <Link
-            to="/admin/orders"
-            className={`${styles.adminLink} ${isActive("/admin/orders")}`}
-          >
+          <Link to="/profile" className={isActive("/profile")}>Mon Profil</Link>
+        </li>
+        <li>
+          <Link to="/admin/orders" className={`${styles.adminLink} ${isActive("/admin/orders")}`}>
             Admin
           </Link>
         </li>
       </ul>
 
       <div className={styles.actions}>
+        {isAuthenticated ? (
+          <button onClick={handleLogout} className={styles.registerButton}>
+            Déconnexion
+          </button>
+        ) : (
+          <>
+            <Link to="/login" className={styles.authLink}>
+              Connexion
+            </Link>
+            <Link to="/register" className={styles.registerButton}>
+              S'inscrire
+            </Link>
+          </>
+        )}
         <Link to="/cart" className={styles.cartButton}>
           <span className={styles.cartIcon}>🛒</span>
           Panier
