@@ -41,7 +41,13 @@ public class SpringSecurityConfig {
 
                                 .authorizeHttpRequests(auth -> auth
                                                 // 1. Routes publiques Auth & User
-                                                .requestMatchers("/api/auth/**", "/api/user/register", "/error").permitAll()
+                                                .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/user/register").permitAll()
+                                                .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/error").permitAll()
+                                                
+                                                .requestMatchers("/api/**").permitAll()
 
                                                 // 2. Vitrine et Blog : Lecture publique (GET) pour les visiteurs
                                                 .requestMatchers(HttpMethod.GET,

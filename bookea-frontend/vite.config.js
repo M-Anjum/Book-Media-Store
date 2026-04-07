@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Cette règle couvre désormais /api/shows, /api/users/login, /api/users/profile, etc.
+      // On redirige vers le BACKEND (8080) et non le frontend (3000)
       '/api': { 
         target: 'http://localhost:8080', 
         changeOrigin: true,

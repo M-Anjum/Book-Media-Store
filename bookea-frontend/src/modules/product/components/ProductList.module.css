@@ -1,0 +1,14 @@
+.container { background: white; border-radius: 8px; border: 1px solid var(--bookea-border); overflow: hidden; }
+.header { padding: 1.5rem; background: var(--bookea-black); color: white; display: flex; justify-content: space-between; align-items: center; }
+.refreshBtn { background: transparent; border: 1px solid var(--bookea-border); color: white; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+.tableWrapper { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table th { background: var(--bookea-bg); padding: 12px; text-align: left; text-transform: uppercase; color: var(--bookea-text-muted); }
+.table td { padding: 12px; border-bottom: 1px solid var(--bookea-border); }
+.priceCol { color: var(--bookea-orange); font-weight: bold; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; }
+.badgeLivre { background: #2d6a4f; }
+.badgeInfo { background: #1e293b; }
+.badgeHifi { background: var(--bookea-orange); }
+.editBtn { color: var(--bookea-orange); background: none; border: none; cursor: pointer; }
+.delBtn { color: #dc2626; background: none; border: none; cursor: pointer; margin-left: 10px; }

@@ -9,8 +9,12 @@ import icc.web.book_media_store.module.product.mapper.ProductMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,41 +62,39 @@ public class ProductService {
         return getProductsByType(ProductType.HIFI);
     }
 
-    // --- CRÉATION ---
+    // --- CRÉATION AVEC IMAGE ---
 
     @Transactional
-    public ProductResponseDTO createBook(BookCreateDTO dto) {
+    public ProductResponseDTO createBook(BookCreateDTO dto, MultipartFile image) {
         Book book = productMapper.toEntity(dto);
         book.setType(ProductType.LIVRE);
+        handleImageUpload(book, image);
         return productMapper.toDTO(productRepository.save(book));
     }
 
     @Transactional
-    public ProductResponseDTO createComputer(ComputerCreateDTO dto) {
+    public ProductResponseDTO createComputer(ComputerCreateDTO dto, MultipartFile image) {
         ComputerEquipment computer = productMapper.toEntity(dto);
         computer.setType(ProductType.MATERIEL_INFORMATIQUE);
+        handleImageUpload(computer, image);
         return productMapper.toDTO(productRepository.save(computer));
     }
 
     @Transactional
-    public ProductResponseDTO createHifi(HifiCreateDTO dto) {
+    public ProductResponseDTO createHifi(HifiCreateDTO dto, MultipartFile image) {
         Hifi hifi = productMapper.toEntity(dto);
         hifi.setType(ProductType.HIFI);
+        handleImageUpload(hifi, image);
         return productMapper.toDTO(productRepository.save(hifi));
     }
 
-    // --- MODIFICATION ---
+    // --- MODIFICATION AVEC IMAGE ---
 
     @Transactional
-    public ProductResponseDTO updateBook(Long id, BookUpdateDTO dto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+    public ProductResponseDTO updateBook(Long id, BookUpdateDTO dto, MultipartFile image) {
+        Book book = (Book) findProductAndCheckType(id, Book.class);
+        updateCommonFields(book, dto, image);
 
-        if (!(product instanceof Book book)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
-
-        updateCommonFields(book, dto);
         if (dto.getAuthor() != null)
             book.setAuthor(dto.getAuthor());
         if (dto.getPageCount() != null)
@@ -104,15 +106,10 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDTO updateComputer(Long id, ComputerUpdateDTO dto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+    public ProductResponseDTO updateComputer(Long id, ComputerUpdateDTO dto, MultipartFile image) {
+        ComputerEquipment computer = (ComputerEquipment) findProductAndCheckType(id, ComputerEquipment.class);
+        updateCommonFields(computer, dto, image);
 
-        if (!(product instanceof ComputerEquipment computer)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
-
-        updateCommonFields(computer, dto);
         if (dto.getBrand() != null)
             computer.setBrand(dto.getBrand());
         if (dto.getProcessor() != null)
@@ -124,15 +121,10 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDTO updateHifi(Long id, HifiUpdateDTO dto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+    public ProductResponseDTO updateHifi(Long id, HifiUpdateDTO dto, MultipartFile image) {
+        Hifi hifi = (Hifi) findProductAndCheckType(id, Hifi.class);
+        updateCommonFields(hifi, dto, image);
 
-        if (!(product instanceof Hifi hifi)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
-
-        updateCommonFields(hifi, dto);
         if (dto.getModel() != null)
             hifi.setModel(dto.getModel());
         if (dto.getPowerWatts() != null)
@@ -145,18 +137,26 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
-        }
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        // Supprimer l'image du disque avant de supprimer l'entrée en BDD
+        deletePhysicalFile(product.getImageUrl());
+        productRepository.delete(product);
     }
 
-    // --- UTILITAIRES ---
+    // --- UTILITAIRES PRIVÉS ---
 
-    /**
-     * Met à jour les champs partagés par tous les types de produits (DRY).
-     */
-    private void updateCommonFields(Product product, ProductUpdateDTO dto) {
+    private Product findProductAndCheckType(Long id, Class<?> expectedClass) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (!expectedClass.isInstance(product)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        return product;
+    }
+
+    private void updateCommonFields(Product product, ProductUpdateDTO dto, MultipartFile image) {
         if (dto.getName() != null)
             product.setName(dto.getName());
         if (dto.getDescription() != null)
@@ -165,7 +165,47 @@ public class ProductService {
             product.setPrice(dto.getPrice());
         if (dto.getStock() != null)
             product.setStock(dto.getStock());
-        if (dto.getImageUrl() != null)
+
+        // Si une nouvelle image est uploadée, on gère le remplacement
+        if (image != null && !image.isEmpty()) {
+            handleImageUpload(product, image);
+        } else if (dto.getImageUrl() != null) {
+            // Si on passe juste une URL (ex: image externe), on l'accepte
             product.setImageUrl(dto.getImageUrl());
+        }
+    }
+
+    private void handleImageUpload(Product product, MultipartFile image) {
+        if (image == null || image.isEmpty())
+            return;
+
+        // Supprimer l'ancienne image si elle existe
+        deletePhysicalFile(product.getImageUrl());
+
+        try {
+            Path uploadPath = Paths.get("uploads/products");
+            if (!Files.exists(uploadPath))
+                Files.createDirectories(uploadPath);
+
+            String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Files.copy(image.getInputStream(), uploadPath.resolve(filename));
+
+            product.setImageUrl("/uploads/products/" + filename);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void deletePhysicalFile(String imageUrl) {
+        if (imageUrl != null && imageUrl.startsWith("/uploads/")) {
+            try {
+                // On retire le premier "/" pour avoir le chemin relatif "uploads/..."
+                Path path = Paths.get(imageUrl.substring(1));
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                // On log l'erreur mais on ne bloque pas la transaction
+                System.err.println("Échec de la suppression du fichier : " + imageUrl);
+            }
+        }
     }
 }

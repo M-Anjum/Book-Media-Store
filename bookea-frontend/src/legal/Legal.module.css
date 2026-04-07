@@ -1,0 +1,38 @@
+.legalContainer {
+  background-color: var(--bookea-bg);
+  min-height: 100vh;
+  padding: 80px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.legalContent {
+  background-color: var(--bookea-white);
+  max-width: 900px;
+  width: 100%;
+  padding: 60px;
+  border-radius: 16px;
+  border: 1px solid var(--bookea-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
+.bookeaTitle {
+  color: var(--bookea-orange);
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.bookeaSubtitle {
+  color: var(--bookea-black);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  margin-bottom: 1.25rem;
+}
+
+.bookeaAccent {
+  color: var(--bookea-orange);
+  font-weight: 700;
+}

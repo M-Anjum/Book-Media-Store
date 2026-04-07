@@ -26,8 +26,8 @@ public class UserServices {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper; // ← injecté automatiquement par Spring
 
-    private static final Set<String> ALLOWED_TYPES = Set.of("image/gif", "image/jpeg");
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("gif", "jpg", "jpeg");
+    private static final Set<String> ALLOWED_TYPES = Set.of("image/gif", "image/jpeg", "image/png");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("gif", "jpg", "jpeg", "png");
 
     public UserProfileResponse getProfile(String email) {
         return userMapper.toResponse(findByEmail(email));
@@ -94,7 +94,15 @@ public String uploadAvatar(String email, MultipartFile file) {
 
     try {
         Path uploadPath = Paths.get("uploads/avatars");
-        if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+        if (!Files.exists(uploadPath))
+            Files.createDirectories(uploadPath);
+
+        // --- NOUVEAU : Suppression de l'ancienne image si elle existe ---
+        if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+            // On transforme le chemin relatif "/uploads/avatars/xxx.jpg" en chemin réel
+            Path oldFilePath = Paths.get(user.getAvatarUrl().substring(1));
+            Files.deleteIfExists(oldFilePath);
+        }
 
         String filename = UUID.randomUUID() + "." + extension;
         Files.copy(file.getInputStream(), uploadPath.resolve(filename));
@@ -107,7 +115,7 @@ public String uploadAvatar(String email, MultipartFile file) {
     } catch (IOException e) {
         throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
-    }
+}
  
     // ─── HELPERS ──────────────────────────────────────────────────────────────
 

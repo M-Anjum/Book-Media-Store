@@ -34,20 +34,4 @@ export interface OrderResponse {
 }
 
 
-export enum ProductType {
-  BOOK = "BOOK",
-  COMPUTER = "COMPUTER",
-  HIFI = "HIFI",
-  SOFTWARE = "SOFTWARE",
-}
 
-export interface ProductResponse {
-  id: number;
-  name: string;
-  description: string;
-  price: number; // En TS, on utilise number (même pour BigDecimal/Double)
-  stock: number;
-  imageUrl?: string;
-  type: ProductType;
-  createdAt?: string;
-}
