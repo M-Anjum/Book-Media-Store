@@ -23,26 +23,37 @@ public class SpringSecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 return http
                                 .cors(Customizer.withDefaults())
-                                .csrf(csrf -> csrf.disable()) // Une seule fois suffit
+                                .csrf(csrf -> csrf.disable())
+
+                                // NOUVEAU : On dit à Spring de renvoyer du JSON au lieu d'une page HTML en cas d'erreur
+                                .exceptionHandling(exc -> exc
+                                        .authenticationEntryPoint((req, res, authException) -> {
+                                                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                res.setContentType("application/json");
+                                                res.getWriter().write("{\"error\": \"Non autorisé. Veuillez vous connecter.\"}");
+                                        })
+                                        .accessDeniedHandler((req, res, accessDeniedException) -> {
+                                                res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                                res.setContentType("application/json");
+                                                res.getWriter().write("{\"error\": \"Accès refusé. Droits administrateur requis.\"}");
+                                        })
+                                )
 
                                 .authorizeHttpRequests(auth -> auth
                                                 // 1. Routes publiques Auth & User
-                                                .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers("/api/user/register").permitAll()
-                                                .requestMatchers("/error").permitAll()
-                                                .requestMatchers("/api/**").permitAll()
+                                                .requestMatchers("/api/auth/**", "/api/user/register", "/error").permitAll()
 
-                                                // 2. Blog: Lecture publique
+                                                // 2. Vitrine et Blog : Lecture publique (GET) pour les visiteurs
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/blog/articles",
-                                                                "/api/blog/articles/*",
-                                                                "/api/blog/articles/*/comments",
-                                                                "/api/blog/images/*")
+                                                                "/api/blog/articles/**",
+                                                                "/api/blog/images/**",
+                                                                "/api/products/**",
+                                                                "/api/books/**",
+                                                                "/api/computers/**",
+                                                                "/api/hifi/**")
                                                 .permitAll()
 
-                                                // 3. Tout le reste demande une authentification
-                                                // Note: Utilise .authenticated() pour que ton 'Principal' ne soit pas
-                                                // null
+                                                // 3. Tout le reste (Créer, Modifier, Supprimer) demande une authentification
                                                 .anyRequest().authenticated())
 
                                 .formLogin(form -> form
@@ -67,7 +78,7 @@ public class SpringSecurityConfig {
                                                                 .setStatus(HttpServletResponse.SC_OK))
                                                 .invalidateHttpSession(true)
                                                 .deleteCookies("JSESSIONID"))
-                                .build(); // C'est cet appel qui transforme le tout en SecurityFilterChain
+                                .build();
         }
 
         @Bean
