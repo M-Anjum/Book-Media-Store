@@ -34,6 +34,7 @@ public class SpringSecurityConfig {
                                                 .requestMatchers("/error").permitAll()
                                                 
                                                 .requestMatchers("/api/**").permitAll()
+                                                .requestMatchers("/uploads/**").permitAll()
 
                                                 // 2. Blog: Lecture publique
                                                 .requestMatchers(HttpMethod.GET,
@@ -41,6 +42,7 @@ public class SpringSecurityConfig {
                                                                 "/api/blog/articles/*",
                                                                 "/api/blog/articles/*/comments",
                                                                 "/api/blog/images/*")
+
                                                 .permitAll()
 
                                                 // 3. Tout le reste demande une authentification
