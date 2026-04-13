@@ -32,11 +32,15 @@ public class SpringSecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                /* TEMP: remove after DB seeded — open blog dummy-data init in browser */
+                                                .requestMatchers("/api/blog/init").permitAll()
                                                 .requestMatchers("/api/chat/auth/**").permitAll()
                                                 .requestMatchers("/api/user/register").permitAll()
                                                 .requestMatchers("/ws-chat/**").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                /* Blog back-office (controller methods also use @PreAuthorize) */
+                                                .requestMatchers("/api/blog/admin/**").hasRole("ADMIN")
                                                 .requestMatchers("/error").permitAll()
                                                 
                                                 .requestMatchers("/api/**").permitAll()
