@@ -32,6 +32,7 @@ import { BlogDetailPage } from "./modules/blog/pages/BlogDetailPage";
 import { LoginPage } from "./modules/auth";
 import { RegisterPage } from "./modules/user/pages";
 import { UserProfilePage } from "./modules/user";
+import LiveChat from "./mini chat/LiveChat";
 
 const App: React.FC = () => {
   return (
@@ -56,6 +57,7 @@ const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/profile" element={<UserProfilePage />} />
+              <Route path="/chat" element={<LiveChat />} />
 
               {/* --- ADMIN COMMANDES --- */}
               <Route path="/admin/orders" element={<AdminDashboard />} />
