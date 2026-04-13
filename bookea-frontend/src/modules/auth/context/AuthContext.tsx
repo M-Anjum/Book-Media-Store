@@ -4,6 +4,8 @@ import { userService } from "../../user/services/user.services";
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  username : string | null;
+  avatarUrl : string | null;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -11,6 +13,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
+  username: null,
+  avatarUrl: null,
   checkAuth: async () => {},
   logout: async () => {},
 });
@@ -18,13 +22,21 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [username, setUsername] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);  
 
   const checkAuth = async () => {
     try {
-      await userService.getProfile();
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (!res.ok) throw new Error("Non connecté");
+      const profile = await res.json();
       setIsAuthenticated(true);
+      setUsername(profile.username ?? profile.firstName ?? null);
+      setAvatarUrl(profile.avatarUrl ?? null);
     } catch {
       setIsAuthenticated(false);
+      setUsername(null);
+      setAvatarUrl(null);
     } finally {
       setIsLoading(false);
     }
@@ -33,6 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setIsAuthenticated(false);
+    setUsername(null);
+    setAvatarUrl(null);
   };
 
   useEffect(() => {
@@ -40,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, checkAuth, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, username, avatarUrl, checkAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );
