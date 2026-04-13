@@ -26,6 +26,7 @@ import { BlogDetailPage } from "./modules/blog/pages/BlogDetailPage";
 import { LoginPage } from "./modules/auth";
 import { RegisterPage } from "./modules/user/pages";
 import { UserProfilePage } from "./modules/user";
+import LiveChat from "./mini chat/LiveChat";
 import AdminUsersPage from "./modules/admin/pages/AdminUserPage";
 import AdminProductPage from "./modules/product/pages/AdminProductPage";
 import Legal from "./legal/Legal";
@@ -40,6 +41,7 @@ const App: React.FC = () => {
             <Navbar />
             <main className="main-content">
               <Routes>
+                {/* --- BOUTIQUE / HOME --- */}
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/legal" element={<Legal />} />
@@ -47,16 +49,28 @@ const App: React.FC = () => {
                 <Route path="/orders/me" element={<MyOrders />} />
                 <Route path="/orders/new" element={<OrderForm />} />
                 <Route path="/orders/edit/:id" element={<OrderForm />} />
+
+                {/* --- BLOG --- */}
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/admin" element={<AdminBlogPage />} />
                 <Route path="/blog/:id" element={<BlogDetailPage />} />
+
+                {/* --- AUTH & PROFIL --- */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
+                <Route path="/chat" element={<LiveChat />} />
+
+                {/* --- ADMIN --- */}
                 <Route path="/admin/add-product" element={<AdminProductPage />} />
                 <Route path="/admin/orders" element={<AdminDashboard />} />
-                <Route path="/admin/orders/archived" element={<AdminArchived />} />
+                <Route
+                  path="/admin/orders/archived"
+                  element={<AdminArchived />}
+                />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
+
+                {/* --- GESTION DES ERREURS --- */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>

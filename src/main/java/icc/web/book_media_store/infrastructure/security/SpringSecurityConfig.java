@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +12,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -22,42 +26,27 @@ public class SpringSecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 return http
-                                .cors(Customizer.withDefaults())
-                                .csrf(csrf -> csrf.disable())
-
-                                // NOUVEAU : On dit à Spring de renvoyer du JSON au lieu d'une page HTML en cas d'erreur
-                                .exceptionHandling(exc -> exc
-                                        .authenticationEntryPoint((req, res, authException) -> {
-                                                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                                                res.setContentType("application/json");
-                                                res.getWriter().write("{\"error\": \"Non autorisé. Veuillez vous connecter.\"}");
-                                        })
-                                        .accessDeniedHandler((req, res, accessDeniedException) -> {
-                                                res.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                                                res.setContentType("application/json");
-                                                res.getWriter().write("{\"error\": \"Accès refusé. Droits administrateur requis.\"}");
-                                        })
-                                )
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf.disable()) // Une seule fois suffit
 
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
+                                                .requestMatchers("/api/chat/auth/**").permitAll()
+                                                .requestMatchers("/api/user/register").permitAll()
+                                                .requestMatchers("/ws-chat/**").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/error").permitAll()
+                                                
+                                                .requestMatchers("/api/**").permitAll()
+                                                .requestMatchers("/uploads/**").permitAll()
 
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/api/blog/articles",
-                                                                "/api/blog/articles/**",
-                                                                "/api/blog/images/**",
-                                                                "/api/products",
-                                                                "/api/products/**",
-                                                                "/api/books",
-                                                                "/api/books/**",
-                                                                "/api/computers",
-                                                                "/api/computers/**",
-                                                                "/api/hifi",
-                                                                "/api/hifi/**")
+                                                                "/api/blog/articles/*",
+                                                                "/api/blog/articles/*/comments",
+                                                                "/api/blog/images/*")
                                                 .permitAll()
 
                                                 .requestMatchers(HttpMethod.POST,
@@ -95,6 +84,23 @@ public class SpringSecurityConfig {
                                                 .invalidateHttpSession(true)
                                                 .deleteCookies("JSESSIONID"))
                                 .build();
+        }
+
+        /**
+         * Origines CORS pour la chaîne de sécurité (front 3000, 3001, 3003).
+         */
+        private CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOriginPatterns(List.of(
+                                "http://localhost:3000",
+                                "http://localhost:3001",
+                                "http://localhost:3003"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
+                config.setAllowCredentials(true);
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
         }
 
         @Bean
