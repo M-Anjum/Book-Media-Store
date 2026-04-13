@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({
         username: profile.username ?? profile.firstName ?? "Utilisateur",
         avatarUrl: profile.avatarUrl ?? null,
-        role: profile.role ?? "USER", // On récupère le rôle du backend
+        role: Array.isArray(profile.roles) ? profile.roles.join(", ") : "", // On récupère le rôle du backend
       });
     } catch {
       setIsAuthenticated(false);

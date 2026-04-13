@@ -19,7 +19,7 @@ const Navbar: React.FC = () => {
   };
 
   // On affiche l'admin seulement si l'utilisateur est ADMIN
-  const isAdmin = user?.role === "ADMIN";
+const isAdmin = user?.role?.includes("ADMIN");
 
   return (
     <nav className={styles.navbar}>
