@@ -24,7 +24,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // L'URL que ton Front-end React utilisera pour se connecter
         registry.addEndpoint("/ws-chat")
-                .setAllowedOrigins("http://localhost:3000") // Ton port React
+                .setAllowedOriginPatterns(
+                        "http://localhost:3000",
+                        "http://localhost:3001",
+                        "http://localhost:3003")
                 .withSockJS(); // Support pour les vieux navigateurs
     }
 }
