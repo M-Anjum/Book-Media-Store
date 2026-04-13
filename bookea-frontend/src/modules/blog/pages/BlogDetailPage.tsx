@@ -1,11 +1,16 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, ThumbsDown, ThumbsUp, UserCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { CommentForm } from '../components/CommentForm';
 import { blogService } from '../services/blog.service';
 import type { Article, Comment } from '../types/blog.types';
+import {
+	clearPendingBlogAction,
+	readPendingBlogAction,
+	savePendingBlogAction,
+} from '../utils/pendingBlogActionStorage';
 import styles from './BlogDetailPage.module.css';
 
 function formatArticleDate(iso: string) {
@@ -41,17 +46,15 @@ export function BlogDetailPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState<'like' | 'dislike' | null>(null);
+	const [intentCommentDraft, setIntentCommentDraft] = useState<string | null>(null);
+
+	const clearIntentCommentDraft = useCallback(() => {
+		setIntentCommentDraft(null);
+	}, []);
 
 	function redirectToLogin() {
 		const returnPath = `${location.pathname}${location.search}${location.hash}`;
 		navigate(`/login?from=${encodeURIComponent(returnPath)}`, { state: { from: returnPath } });
-	}
-
-	function requireAuthForInteraction(): boolean {
-		if (authLoading) return false;
-		if (isAuthenticated) return true;
-		redirectToLogin();
-		return false;
 	}
 
 	useEffect(() => {
@@ -90,13 +93,48 @@ export function BlogDetailPage() {
 		};
 	}, [id]);
 
+	useEffect(() => {
+		if (!isAuthenticated || authLoading || !article || !id) return;
+
+		const action = readPendingBlogAction();
+		if (!action) return;
+		if (Number(action.articleId) !== Number(article.id)) return;
+
+		if (action.type === 'COMMENT') {
+			setIntentCommentDraft(action.payload);
+			return;
+		}
+
+		clearPendingBlogAction();
+		const reaction: 'like' | 'dislike' = action.type === 'LIKE' ? 'like' : 'dislike';
+		setPending(reaction);
+		void (async () => {
+			try {
+				const updated =
+					action.type === 'LIKE'
+						? await blogService.likeArticle(article.id)
+						: await blogService.dislikeArticle(article.id);
+				setArticle(updated);
+			} catch {
+				/* keep counts */
+			} finally {
+				setPending(null);
+			}
+		})();
+	}, [isAuthenticated, authLoading, article, id]);
+
 	function handleCommentAdded(comment: Comment) {
 		setComments((prev) => [comment, ...prev]);
 	}
 
 	async function handleLike() {
 		if (!article) return;
-		if (!requireAuthForInteraction()) return;
+		if (authLoading) return;
+		if (!isAuthenticated) {
+			savePendingBlogAction({ type: 'LIKE', articleId: article.id });
+			redirectToLogin();
+			return;
+		}
 		setPending('like');
 		try {
 			const updated = await blogService.likeArticle(article.id);
@@ -110,7 +148,12 @@ export function BlogDetailPage() {
 
 	async function handleDislike() {
 		if (!article) return;
-		if (!requireAuthForInteraction()) return;
+		if (authLoading) return;
+		if (!isAuthenticated) {
+			savePendingBlogAction({ type: 'DISLIKE', articleId: article.id });
+			redirectToLogin();
+			return;
+		}
 		setPending('dislike');
 		try {
 			const updated = await blogService.dislikeArticle(article.id);
@@ -261,6 +304,8 @@ export function BlogDetailPage() {
 						onRequireLogin={redirectToLogin}
 						isAuthenticated={isAuthenticated}
 						authLoading={authLoading}
+						intentCommentDraft={intentCommentDraft}
+						onIntentCommentDraftApplied={clearIntentCommentDraft}
 					/>
 				</section>
 			</div>
