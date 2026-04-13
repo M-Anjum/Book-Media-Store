@@ -19,13 +19,13 @@ const postJson = (url: string, body: unknown) =>
 	});
 
 export const blogService = {
-	async getArticles(search?: string): Promise<Article[]> {
+	async getArticles(search?: string, signal?: AbortSignal): Promise<Article[]> {
 		const q = search?.trim();
 		const url =
 			q && q.length > 0
 				? `${BASE}/articles?search=${encodeURIComponent(q)}`
 				: `${BASE}/articles`;
-		const res = await fetch(url);
+		const res = await fetch(url, { signal });
 		return parseJson<Article[]>(res);
 	},
 
@@ -83,13 +83,24 @@ export const blogService = {
 	},
 
 	async updateArticle(id: string | number, data: ArticleCreateInput): Promise<Article> {
-		const res = await fetch(`${BASE}/articles/${id}`, {
+		const res = await fetch(`${BASE}/admin/articles/${id}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
 			body: JSON.stringify(data),
 		});
 		return parseJson<Article>(res);
+	},
+
+	/** Admin: update comment text — PUT /api/blog/admin/comments/:id */
+	async updateComment(id: string | number, data: { content: string }): Promise<CommentModeration> {
+		const res = await fetch(`${BASE}/admin/comments/${id}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'include',
+			body: JSON.stringify(data),
+		});
+		return parseJson<CommentModeration>(res);
 	},
 
 	/**
