@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArticleForm } from '../components/ArticleForm';
 import { blogService } from '../services/blog.service';
-import type { Article, ArticleCreateInput } from '../types/blog.types';
+import type { Article, ArticleCreateInput, CommentModeration } from '../types/blog.types';
 import styles from './AdminBlogPage.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -36,6 +36,23 @@ export function AdminBlogPage() {
 	const [statusBusyId, setStatusBusyId] = useState<number | null>(null);
 	const [restoreBusyId, setRestoreBusyId] = useState<number | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [pendingComments, setPendingComments] = useState<CommentModeration[]>([]);
+	const [recentUserComments, setRecentUserComments] = useState<CommentModeration[]>([]);
+	const [moderationBusyId, setModerationBusyId] = useState<number | null>(null);
+
+	const loadCommentModeration = useCallback(async () => {
+		try {
+			const [p, r] = await Promise.all([
+				blogService.getPendingComments(),
+				blogService.getRecentUserCommentsForModeration(),
+			]);
+			setPendingComments(p);
+			setRecentUserComments(r);
+		} catch {
+			setPendingComments([]);
+			setRecentUserComments([]);
+		}
+	}, []);
 
 	const refresh = useCallback(async () => {
 		setError(null);
@@ -64,6 +81,10 @@ export function AdminBlogPage() {
 			cancelled = true;
 		};
 	}, []);
+
+	useEffect(() => {
+		void loadCommentModeration();
+	}, [loadCommentModeration]);
 
 	useEffect(() => {
 		if (!successMessage) return;
@@ -155,6 +176,20 @@ export function AdminBlogPage() {
 		}
 	}
 
+	async function handleModerateComment(row: CommentModeration, decision: 'APPROVED' | 'REJECTED') {
+		setModerationBusyId(row.id);
+		setError(null);
+		try {
+			await blogService.moderateComment(row.id, decision);
+			await loadCommentModeration();
+			setSuccessMessage(decision === 'APPROVED' ? 'Comment approved.' : 'Comment rejected.');
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Moderation failed');
+		} finally {
+			setModerationBusyId(null);
+		}
+	}
+
 	return (
 		<div className={styles.page}>
 			<header className={styles.topBar}>
@@ -185,6 +220,105 @@ export function AdminBlogPage() {
 						{error}
 					</div>
 				) : null}
+
+				<div className={styles.card} style={{ marginBottom: '1rem' }}>
+					<div className="p-3 p-md-4">
+						<h2 className={styles.modSectionTitle}>5 most recent user comments</h2>
+						<p className={styles.modSectionHint}>
+							Newest comments from non-admin accounts (quick scan for moderation).
+						</p>
+						{recentUserComments.length === 0 ? (
+							<p className="text-secondary small mb-0">No recent user comments to show.</p>
+						) : (
+							<div className={styles.tableWrap}>
+								<table className="table table-sm table-hover mb-0 align-middle">
+									<thead>
+										<tr>
+											<th className={styles.tableHead}>Article</th>
+											<th className={styles.tableHead}>Author</th>
+											<th className={styles.tableHead}>Excerpt</th>
+											<th className={styles.tableHead}>Status</th>
+											<th className={styles.tableHead}>Submitted</th>
+										</tr>
+									</thead>
+									<tbody>
+										{recentUserComments.map((c) => (
+											<tr key={c.id}>
+												<td className="small">
+													<Link to={`/blog/${c.articleId}`}>{c.articleTitle}</Link>
+												</td>
+												<td className="small text-secondary">{c.authorUsername}</td>
+												<td className="small" style={{ maxWidth: 280 }}>
+													{c.content.length > 120 ? `${c.content.slice(0, 120)}…` : c.content}
+												</td>
+												<td>
+													<span className="badge bg-secondary text-uppercase">{c.status}</span>
+												</td>
+												<td className="text-secondary small text-nowrap">{formatTableDate(c.createdAt)}</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className={styles.card} style={{ marginBottom: '1rem' }}>
+					<div className="p-3 p-md-4">
+						<h2 className={styles.modSectionTitle}>Pending comments</h2>
+						<p className={styles.modSectionHint}>Approve or reject before they appear on the public article.</p>
+						{pendingComments.length === 0 ? (
+							<p className="text-secondary small mb-0">No comments awaiting approval.</p>
+						) : (
+							<div className={styles.tableWrap}>
+								<table className="table table-hover mb-0 align-middle">
+									<thead>
+										<tr>
+											<th className={styles.tableHead}>Article</th>
+											<th className={styles.tableHead}>Author</th>
+											<th className={styles.tableHead}>Comment</th>
+											<th className={styles.tableHead}>Submitted</th>
+											<th className={styles.tableHead} style={{ width: '1%' }}>
+												Actions
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										{pendingComments.map((c) => (
+											<tr key={c.id}>
+												<td className="small">
+													<Link to={`/blog/${c.articleId}`}>{c.articleTitle}</Link>
+												</td>
+												<td className="small text-secondary">{c.authorUsername}</td>
+												<td className="small">{c.content}</td>
+												<td className="text-secondary small text-nowrap">{formatTableDate(c.createdAt)}</td>
+												<td className="text-nowrap">
+													<button
+														type="button"
+														className="btn btn-sm btn-success me-1"
+														disabled={moderationBusyId === c.id}
+														onClick={() => handleModerateComment(c, 'APPROVED')}
+													>
+														Approve
+													</button>
+													<button
+														type="button"
+														className="btn btn-sm btn-outline-danger"
+														disabled={moderationBusyId === c.id}
+														onClick={() => handleModerateComment(c, 'REJECTED')}
+													>
+														Reject
+													</button>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
+					</div>
+				</div>
 
 				<div className={styles.card}>
 					{loading ? (

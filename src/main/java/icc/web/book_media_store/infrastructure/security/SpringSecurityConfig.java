@@ -40,27 +40,37 @@ public class SpringSecurityConfig {
                                 )
 
                                 .authorizeHttpRequests(auth -> auth
-                                                // 1. Routes publiques Auth & User
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/api/auth/**").permitAll()
-                                                .requestMatchers("/api/user/register").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                                .requestMatchers("/error").permitAll()
-                                                
-                                                .requestMatchers("/api/**").permitAll()
 
-                                                // 2. Vitrine et Blog : Lecture publique (GET) pour les visiteurs
                                                 .requestMatchers(HttpMethod.GET,
+                                                                "/api/blog/articles",
                                                                 "/api/blog/articles/**",
                                                                 "/api/blog/images/**",
+                                                                "/api/products",
                                                                 "/api/products/**",
+                                                                "/api/books",
                                                                 "/api/books/**",
+                                                                "/api/computers",
                                                                 "/api/computers/**",
+                                                                "/api/hifi",
                                                                 "/api/hifi/**")
                                                 .permitAll()
 
-                                                // 3. Tout le reste (Créer, Modifier, Supprimer) demande une authentification
-                                                .anyRequest().authenticated())
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/blog/articles/*/comments",
+                                                                "/api/blog/*/like",
+                                                                "/api/blog/*/dislike")
+                                                .authenticated()
+
+                                                .requestMatchers("/api/rooms/**").permitAll()
+
+                                                .requestMatchers("/api/**").authenticated()
+
+                                                .anyRequest().permitAll())
 
                                 .formLogin(form -> form
                                                 .loginProcessingUrl("/api/auth/login")

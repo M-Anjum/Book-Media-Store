@@ -1,4 +1,4 @@
-import type { Article, ArticleCreateInput, Comment } from '../types/blog.types';
+import type { Article, ArticleCreateInput, Comment, CommentModeration, CommentModerationStatus } from '../types/blog.types';
 
 const BASE = '/api/blog';
 
@@ -129,5 +129,25 @@ export const blogService = {
 			credentials: 'include',
 		});
 		return parseJson<Article>(res);
+	},
+
+	async getPendingComments(): Promise<CommentModeration[]> {
+		const res = await fetch(`${BASE}/admin/comments/pending`, { credentials: 'include' });
+		return parseJson<CommentModeration[]>(res);
+	},
+
+	async getRecentUserCommentsForModeration(): Promise<CommentModeration[]> {
+		const res = await fetch(`${BASE}/admin/comments/recent-from-users`, { credentials: 'include' });
+		return parseJson<CommentModeration[]>(res);
+	},
+
+	async moderateComment(id: string | number, status: Exclude<CommentModerationStatus, 'PENDING'>): Promise<CommentModeration> {
+		const res = await fetch(`${BASE}/admin/comments/${id}/moderation`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'include',
+			body: JSON.stringify({ status }),
+		});
+		return parseJson<CommentModeration>(res);
 	},
 };

@@ -14,9 +14,20 @@ type Props = {
 	articleId: number;
 	onCommentAdded: (comment: Comment) => void;
 	ui?: CommentFormUi;
+	/** When false and `onRequireLogin` is set, submit redirects to login instead of calling the API. */
+	isAuthenticated?: boolean;
+	authLoading?: boolean;
+	onRequireLogin?: () => void;
 };
 
-export function CommentForm({ articleId, onCommentAdded, ui }: Props) {
+export function CommentForm({
+	articleId,
+	onCommentAdded,
+	ui,
+	isAuthenticated = true,
+	authLoading = false,
+	onRequireLogin,
+}: Props) {
 	const [content, setContent] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -25,6 +36,12 @@ export function CommentForm({ articleId, onCommentAdded, ui }: Props) {
 		e.preventDefault();
 		const trimmed = content.trim();
 		if (!trimmed) return;
+
+		if (authLoading) return;
+		if (!isAuthenticated) {
+			onRequireLogin?.();
+			return;
+		}
 
 		setSubmitting(true);
 		setError(null);

@@ -2,18 +2,25 @@ package icc.web.book_media_store.module.blog.service;
 
 import icc.web.book_media_store.module.blog.dto.ArticleRequest;
 import icc.web.book_media_store.module.blog.dto.ArticleResponse;
+import icc.web.book_media_store.module.blog.dto.CommentModerationRequest;
+import icc.web.book_media_store.module.blog.dto.CommentModerationResponse;
 import icc.web.book_media_store.module.blog.dto.CommentRequest;
 import icc.web.book_media_store.module.blog.dto.CommentResponse;
 import icc.web.book_media_store.module.blog.dto.mapper.BlogMapper;
 import icc.web.book_media_store.module.blog.model.Article;
 import icc.web.book_media_store.module.blog.model.Comment;
+import icc.web.book_media_store.module.blog.model.CommentStatus;
 import icc.web.book_media_store.module.blog.repository.ArticleRepository;
 import icc.web.book_media_store.module.blog.repository.CommentRepository;
+import icc.web.book_media_store.module.user.model.role.Role;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -55,7 +62,9 @@ public class BlogService {
 		if (!articleRepository.existsByIdAndDeletedFalseAndActiveTrue(articleId)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found");
 		}
-		return commentRepository.findByArticleIdOrderByCreatedAtDesc(articleId).stream()
+		return commentRepository
+				.findByArticle_IdAndStatusOrderByCreatedAtDesc(articleId, CommentStatus.APPROVED)
+				.stream()
 				.map(blogMapper::toCommentResponse)
 				.toList();
 	}
@@ -63,13 +72,49 @@ public class BlogService {
 	public CommentResponse addComment(Long articleId, CommentRequest request) {
 		Article article = articleRepository.findByIdAndDeletedFalseAndActiveTrue(articleId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Article not found"));
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null || !auth.isAuthenticated()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+		}
+		String principal = auth.getName();
+		if (principal == null || principal.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+		}
 		Comment comment = Comment.builder()
 				.content(request.content())
-				.authorUsername("user")
+				.authorUsername(principal)
 				.article(article)
+				.status(CommentStatus.PENDING)
 				.build();
 		Comment saved = commentRepository.save(comment);
 		return blogMapper.toCommentResponse(saved);
+	}
+
+	public List<CommentModerationResponse> listPendingComments() {
+		return commentRepository.findByStatusWithArticleOrderByCreatedAtDesc(CommentStatus.PENDING).stream()
+				.map(blogMapper::toCommentModerationResponse)
+				.toList();
+	}
+
+	/** Five most recent blog comments whose authors are not ADMIN users (moderation snapshot). */
+	public List<CommentModerationResponse> listFiveMostRecentCommentsFromNonAdminUsers() {
+		return commentRepository
+				.findRecentCommentsFromNonAdminUsers(Role.ADMIN, PageRequest.of(0, 5))
+				.stream()
+				.map(blogMapper::toCommentModerationResponse)
+				.toList();
+	}
+
+	public CommentModerationResponse moderateComment(Long commentId, CommentModerationRequest request) {
+		CommentStatus target = request.status();
+		if (target != CommentStatus.APPROVED && target != CommentStatus.REJECTED) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only APPROVED or REJECTED are allowed");
+		}
+		Comment comment = commentRepository.findById(commentId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+		comment.setStatus(target);
+		Comment saved = commentRepository.save(comment);
+		return blogMapper.toCommentModerationResponse(saved);
 	}
 
 	public ArticleResponse createArticle(ArticleRequest request) {
@@ -212,42 +257,50 @@ public class BlogService {
 				.content("This is exactly the overview I needed—clear and forward-looking.")
 				.authorUsername("alex")
 				.article(first)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("Any recommended reading for ethics in deployed models?")
 				.authorUsername("sam")
 				.article(first)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("Loved the section on smaller models. More teams should try distillation first.")
 				.authorUsername("maria")
 				.article(first)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("Saving this for our next guild meeting. Thanks!")
 				.authorUsername("user")
 				.article(first)
+				.status(CommentStatus.APPROVED)
 				.build());
 
 		commentRepository.save(Comment.builder()
 				.content("Already ordered three from your fiction list. Impossible to choose just one.")
 				.authorUsername("jordan")
 				.article(second)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("Would love a follow-up on translated works this year.")
 				.authorUsername("taylor")
 				.article(second)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("The thriller picks are spot on—finished two in a weekend.")
 				.authorUsername("casey")
 				.article(second)
+				.status(CommentStatus.APPROVED)
 				.build());
 		commentRepository.save(Comment.builder()
 				.content("Great balance between buzzy releases and quieter gems.")
 				.authorUsername("riley")
 				.article(second)
+				.status(CommentStatus.APPROVED)
 				.build());
 
 		return "Database initialized with dummy data.";

@@ -1,7 +1,8 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, ThumbsDown, ThumbsUp, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext';
 import { CommentForm } from '../components/CommentForm';
 import { blogService } from '../services/blog.service';
 import type { Article, Comment } from '../types/blog.types';
@@ -32,11 +33,26 @@ function formatCommentTime(iso: string) {
 
 export function BlogDetailPage() {
 	const { id } = useParams<{ id: string }>();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { isAuthenticated, isLoading: authLoading } = useAuth();
 	const [article, setArticle] = useState<Article | null>(null);
 	const [comments, setComments] = useState<Comment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState<'like' | 'dislike' | null>(null);
+
+	function redirectToLogin() {
+		const returnPath = `${location.pathname}${location.search}${location.hash}`;
+		navigate(`/login?from=${encodeURIComponent(returnPath)}`, { state: { from: returnPath } });
+	}
+
+	function requireAuthForInteraction(): boolean {
+		if (authLoading) return false;
+		if (isAuthenticated) return true;
+		redirectToLogin();
+		return false;
+	}
 
 	useEffect(() => {
 		if (!id) {
@@ -80,6 +96,7 @@ export function BlogDetailPage() {
 
 	async function handleLike() {
 		if (!article) return;
+		if (!requireAuthForInteraction()) return;
 		setPending('like');
 		try {
 			const updated = await blogService.likeArticle(article.id);
@@ -93,6 +110,7 @@ export function BlogDetailPage() {
 
 	async function handleDislike() {
 		if (!article) return;
+		if (!requireAuthForInteraction()) return;
 		setPending('dislike');
 		try {
 			const updated = await blogService.dislikeArticle(article.id);
@@ -181,7 +199,7 @@ export function BlogDetailPage() {
 								type="button"
 								className={styles.reactionBtn}
 								onClick={handleLike}
-								disabled={pending !== null}
+								disabled={pending !== null || authLoading}
 								aria-label="Like"
 							>
 								<ThumbsUp size={20} strokeWidth={2} />
@@ -191,7 +209,7 @@ export function BlogDetailPage() {
 								type="button"
 								className={styles.reactionBtn}
 								onClick={handleDislike}
-								disabled={pending !== null}
+								disabled={pending !== null || authLoading}
 								aria-label="Dislike"
 							>
 								<ThumbsDown size={20} strokeWidth={2} />
@@ -221,6 +239,11 @@ export function BlogDetailPage() {
 									<div className={styles.bubbleCard}>
 										<div className={styles.bubbleMeta}>
 											<span className={styles.author}>{c.authorUsername}</span>
+											{c.status === 'PENDING' ? (
+												<span className={styles.pendingBadge} title="Visible to you until a moderator approves it">
+													Pending
+												</span>
+											) : null}
 											<time className={styles.timestamp} dateTime={c.createdAt}>
 												{formatCommentTime(c.createdAt)}
 											</time>
@@ -231,7 +254,14 @@ export function BlogDetailPage() {
 							))}
 						</ul>
 					)}
-					<CommentForm articleId={articleIdNum} onCommentAdded={handleCommentAdded} ui={formUi} />
+					<CommentForm
+						articleId={articleIdNum}
+						onCommentAdded={handleCommentAdded}
+						ui={formUi}
+						onRequireLogin={redirectToLogin}
+						isAuthenticated={isAuthenticated}
+						authLoading={authLoading}
+					/>
 				</section>
 			</div>
 		</div>

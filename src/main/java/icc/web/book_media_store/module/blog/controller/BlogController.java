@@ -2,6 +2,8 @@ package icc.web.book_media_store.module.blog.controller;
 
 import icc.web.book_media_store.module.blog.dto.ArticleRequest;
 import icc.web.book_media_store.module.blog.dto.ArticleResponse;
+import icc.web.book_media_store.module.blog.dto.CommentModerationRequest;
+import icc.web.book_media_store.module.blog.dto.CommentModerationResponse;
 import icc.web.book_media_store.module.blog.dto.CommentRequest;
 import icc.web.book_media_store.module.blog.dto.CommentResponse;
 import icc.web.book_media_store.module.blog.service.BlogService;
@@ -101,17 +103,39 @@ public class BlogController {
 		return blogService.getComments(id);
 	}
 
+	@GetMapping("/admin/comments/pending")
+	@PreAuthorize("hasRole('ADMIN')")
+	public List<CommentModerationResponse> listPendingComments() {
+		return blogService.listPendingComments();
+	}
+
+	@GetMapping("/admin/comments/recent-from-users")
+	@PreAuthorize("hasRole('ADMIN')")
+	public List<CommentModerationResponse> listRecentUserCommentsForModeration() {
+		return blogService.listFiveMostRecentCommentsFromNonAdminUsers();
+	}
+
+	@PatchMapping("/admin/comments/{commentId}/moderation")
+	@PreAuthorize("hasRole('ADMIN')")
+	public CommentModerationResponse moderateComment(
+			@PathVariable Long commentId, @Valid @RequestBody CommentModerationRequest request) {
+		return blogService.moderateComment(commentId, request);
+	}
+
 	@PostMapping("/articles/{id}/comments")
+	@PreAuthorize("isAuthenticated()")
 	public CommentResponse createComment(@PathVariable Long id, @Valid @RequestBody CommentRequest request) {
 		return blogService.addComment(id, request);
 	}
 
 	@PostMapping("/{id}/like")
+	@PreAuthorize("isAuthenticated()")
 	public ArticleResponse likeArticle(@PathVariable Long id) {
 		return blogService.likeArticle(id);
 	}
 
 	@PostMapping("/{id}/dislike")
+	@PreAuthorize("isAuthenticated()")
 	public ArticleResponse dislikeArticle(@PathVariable Long id) {
 		return blogService.dislikeArticle(id);
 	}

@@ -98,6 +98,19 @@
 	padding: 0 1.25rem;
 }
 
+.modSectionTitle {
+	margin: 0 0 0.75rem;
+	font-size: 1rem;
+	font-weight: 700;
+	color: #2a2a2a;
+}
+
+.modSectionHint {
+	margin: 0 0 1rem;
+	font-size: 0.82rem;
+	color: #666;
+}
+
 .card {
 	background: #fff;
 	border-radius: 12px;

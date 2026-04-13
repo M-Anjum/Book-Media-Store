@@ -13,6 +13,11 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) =>
     location.pathname === path ? styles.active : "";
 
+  const blogNavClass =
+    location.pathname === "/blog" || location.pathname.startsWith("/blog/")
+      ? styles.active
+      : "";
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
@@ -26,6 +31,7 @@ const Navbar: React.FC = () => {
 
       <ul className={styles.navLinks}>
         <li><Link to="/" className={isActive("/")}>Accueil</Link></li>
+        <li><Link to="/blog" className={blogNavClass}>Blog</Link></li>
         <li><Link to="/orders/me" className={isActive("/orders/me")}>Mes Commandes</Link></li>
         {isAuthenticated && (
           <li><Link to="/profile" className={isActive("/profile")}>Mon Profil</Link></li>
