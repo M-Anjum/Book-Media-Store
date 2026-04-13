@@ -19,7 +19,6 @@
     font-weight: 800;
     letter-spacing: -1px;
 }
-
 .logo span { color: #E8520A; }
 
 .navLinks {
@@ -28,6 +27,7 @@
     gap: 2rem;
     align-items: center;
     margin: 0;
+    padding: 0;
 }
 
 .navLinks a {
@@ -35,122 +35,199 @@
     color: #888;
     font-weight: 500;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .navLinks a:hover, .active {
     color: #E8520A !important;
 }
 
-/* --- STYLE DROPDOWN ADMIN --- */
-.adminDropdown {
-    position: relative;
-    padding: 10px 0;
-    cursor: pointer;
-}
-
-.adminTrigger {
-    color: #E8520A;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    border: 1px solid rgba(232, 82, 10, 0.3);
-    padding: 6px 15px;
-    border-radius: 20px;
-    transition: 0.3s;
-}
-
-.adminDropdown:hover .adminTrigger {
-    background: rgba(232, 82, 10, 0.1);
-    border-color: #E8520A;
-}
-
-.dropdownMenu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 12px;
-    min-width: 180px;
-    list-style: none;
-    padding: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.adminDropdown:hover .dropdownMenu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-.dropdownMenu li {
-    margin-bottom: 5px;
-}
-
-.dropdownMenu a {
-    display: block;
-    padding: 10px 15px;
-    color: #eee !important;
-    font-size: 0.85rem;
-    border-radius: 8px;
-    transition: 0.2s;
-}
-
-.dropdownMenu a:hover {
-    background: #E8520A;
-    color: white !important;
-}
-
-/* --- ACTIONS & BOUTONS --- */
+/* --- ACTIONS AREA --- */
 .actions {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.registerButton {
-    font-size: 14px;
+/* --- BOUTONS AUTH (CONNEXION / INSCRIRE) --- */
+.authButtons {
+    display: flex;
+    gap: 10px;
+}
+
+.authLink {
+    text-decoration: none;
     color: #E8520A;
-    padding: 8px 18px;
-    background: transparent;
     border: 1.5px solid #E8520A;
+    padding: 8px 16px;
     border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
+    transition: 0.3s;
+}
+
+.authLink:hover {
+    background: rgba(232, 82, 10, 0.1);
+}
+
+.registerButton {
+    text-decoration: none;
+    background: #E8520A;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1.5px solid #E8520A;
     transition: 0.3s;
 }
 
 .registerButton:hover {
-    background: #E8520A;
-    color: #fff;
+    background: #c94409;
+    border-color: #c94409;
 }
 
+/* --- PANIER --- */
 .cartButton {
     display: flex;
     align-items: center;
-    background: #E8520A;
+    gap: 8px;
+    background: #222;
     padding: 8px 15px;
     border-radius: 8px;
     text-decoration: none;
     color: white;
-    font-weight: 700;
+    font-weight: 600;
+    border: 1px solid #333;
     transition: 0.3s;
-    gap: 8px;
+}
+
+.cartButton:hover {
+    border-color: #E8520A;
+}
+
+.cartIcon {
+    width: 18px;
+    height: 18px;
+    color: #E8520A;
 }
 
 .badge {
-    background: white;
-    color: #E8520A;
-    font-size: 0.75rem;
+    background: #E8520A;
+    color: white;
+    font-size: 0.7rem;
     padding: 2px 6px;
-    border-radius: 50%;
+    border-radius: 10px;
+    margin-left: 4px;
 }
+
+/* --- DROPDOWNS --- */
+.adminDropdown, .profileDropdown {
+    position: relative;
+}
+
+.adminTrigger {
+    color: #E8520A;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid rgba(232, 82, 10, 0.3);
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.dropdownMenu, .profileMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    min-width: 190px;
+    list-style: none;
+    padding: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 2000;
+}
+
+.adminDropdown:hover .dropdownMenu,
+.profileDropdown:hover .profileMenu {
+    display: block;
+    animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownMenu a, .profileMenu a {
+    display: block;
+    padding: 10px 12px;
+    color: #ccc !important;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    text-decoration: none !important;
+}
+
+.dropdownMenu a:hover, .profileMenu a:hover {
+    background: rgba(232, 82, 10, 0.1);
+    color: #E8520A !important;
+}
+
+/* --- AVATAR --- */
+.avatarTrigger {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #E8520A;
+    overflow: hidden;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder {
+    color: #E8520A;
+    font-weight: 800;
+}
+
+.divider {
+    height: 1px;
+    background: #333;
+    margin: 5px 0;
+}
+
+.menuHeader {
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menuHeader strong { font-size: 0.9rem; color: #fff; }
+.menuHeader span { font-size: 0.7rem; color: #888; }
+
+.logoutBtn {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.logoutBtn:hover { background: rgba(255, 77, 77, 0.1); }
