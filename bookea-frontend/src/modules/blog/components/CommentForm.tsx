@@ -1,6 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { blogService } from '../services/blog.service';
 import type { Comment } from '../types/blog.types';
+import { clearPendingBlogAction, savePendingBlogAction } from '../utils/pendingBlogActionStorage';
 
 export type CommentFormUi = {
 	form?: string;
@@ -18,6 +19,9 @@ type Props = {
 	isAuthenticated?: boolean;
 	authLoading?: boolean;
 	onRequireLogin?: () => void;
+	/** Draft restored after login; cleared from storage once applied to the textarea. */
+	intentCommentDraft?: string | null;
+	onIntentCommentDraftApplied?: () => void;
 };
 
 export function CommentForm({
@@ -27,10 +31,19 @@ export function CommentForm({
 	isAuthenticated = true,
 	authLoading = false,
 	onRequireLogin,
+	intentCommentDraft = null,
+	onIntentCommentDraftApplied,
 }: Props) {
 	const [content, setContent] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (intentCommentDraft == null || intentCommentDraft === '') return;
+		setContent(intentCommentDraft);
+		clearPendingBlogAction();
+		onIntentCommentDraftApplied?.();
+	}, [intentCommentDraft, onIntentCommentDraftApplied]);
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
@@ -39,6 +52,7 @@ export function CommentForm({
 
 		if (authLoading) return;
 		if (!isAuthenticated) {
+			savePendingBlogAction({ type: 'COMMENT', articleId, payload: trimmed });
 			onRequireLogin?.();
 			return;
 		}
