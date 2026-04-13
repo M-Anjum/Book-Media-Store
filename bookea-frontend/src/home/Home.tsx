@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useCart } from "../order/cart/CartContext";
-import { ProductResponse } from "../order/type/types";
+import { ProductResponse } from "../modules/product/type/product";
+import { productService } from "../modules/product/services/productService";
 import styles from "./Home.module.css";
 
 const Home: React.FC = () => {
@@ -8,46 +9,61 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
+  const API_URL = "http://localhost:8080";
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await productService.getAllProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error("Erreur:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  if (loading)
-    return <div className={styles.loader}>Chargement de l'univers...</div>;
+  const getImageUrl = (url: string | null) => {
+    if (!url) return null;
+    return url.startsWith("http") ? url : `${API_URL}${url}`;
+  };
+
+  if (loading) return <div className={styles.loader}>Chargement...</div>;
 
   return (
     <div className={styles.homeContainer}>
-      {/* Hero Banner */}
       <header className={styles.hero}>
         <div className={styles.heroContent}>
-          <h1>MULTIMÉDIA & TECH</h1>
-          <p>
-            Découvrez notre sélection de Livres, Hi-Fi et Matériel Informatique.
-          </p>
+          <h1>L'excellence au quotidien.</h1>
+          <p>La sélection premium Bookea Store.</p>
         </div>
       </header>
 
-      {/* Grille de Produits */}
       <section className={styles.productSection}>
-        <h2 className={styles.title}>Nouveautés</h2>
         <div className={styles.grid}>
           {products.map((product) => (
             <div key={product.id} className={styles.card}>
-              <div className={styles.imageBox}>
+              <div className={styles.imageWrapper}>
                 {product.imageUrl ? (
-                  <img src={product.imageUrl} alt={product.name} />
+                  <img
+                    src={getImageUrl(product.imageUrl)!}
+                    alt={product.name}
+                  />
                 ) : (
-                  <div className={styles.placeholder}>IMAGE</div>
+                  <div className={styles.placeholder}>BOOKEA</div>
                 )}
-                <span
-                  className={`${styles.typeBadge} ${styles[product.type.toLowerCase()]}`}
-                >
-                  {product.type}
+                {/* Badge avec couleur dynamique selon le type */}
+                <span className={`${styles.badge} ${styles[product.type]}`}>
+                  {product.type.replace("_", " ")}
                 </span>
               </div>
 
-              <div className={styles.info}>
-                <h3>{product.name}</h3>
-                <p className={styles.description}>{product.description}</p>
-                <div className={styles.footerCard}>
+              <div className={styles.content}>
+                <h3 className={styles.productName}>{product.name}</h3>
+                <div className={styles.cardFooter}>
                   <span className={styles.price}>
                     {product.price.toFixed(2)} €
                   </span>
@@ -56,7 +72,7 @@ const Home: React.FC = () => {
                     onClick={() => addToCart(product)}
                     disabled={product.stock === 0}
                   >
-                    {product.stock > 0 ? "Ajouter" : "Rupture"}
+                    {product.stock > 0 ? "AJOUTER" : "ÉPUISÉ"}
                   </button>
                 </div>
               </div>

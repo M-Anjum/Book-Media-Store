@@ -1,106 +1,102 @@
 import { useEffect, useState } from "react";
-import { userService } from "../services";
-import { AvatarUpload, ChangePasswordForm, EditProfileForm, ProfileCard } from "../components";
-import type { ChangePasswordPayload, UpdateProfilePayload, User } from "../types";
- 
+import { userService } from "../services/user.services";
+import {
+  ChangePasswordForm,
+  EditProfileForm,
+  ProfileCard,
+} from "../components"; // On a retiré AvatarUpload des imports si plus utilisé
+import type {
+  ChangePasswordPayload,
+  UpdateProfilePayload,
+  User,
+} from "../types";
+import styles from "./UserProfilePage.module.css";
+
 type Tab = "profile" | "security";
- 
+
 export default function UserProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
- 
-  // ─── Load profile on mount ────────────────────────────────────────────────
+
   useEffect(() => {
     userService
       .getProfile()
       .then(setUser)
-      .catch(() => setPageError("Unable to load your profile."));
+      .catch((err) => {
+        console.error("Erreur profil:", err);
+        setPageError("Impossible de charger le profil.");
+      });
   }, []);
- 
-  // ─── Handlers ─────────────────────────────────────────────────────────────
+
   const handleUpdateProfile = async (payload: UpdateProfilePayload) => {
     setIsLoading(true);
     try {
       const updated = await userService.updateProfile(payload);
       setUser(updated);
       setIsEditing(false);
+    } catch (error: any) {
+      alert("Erreur 400 : Vérifiez l'adresse et le code postal.");
     } finally {
       setIsLoading(false);
     }
   };
- 
+
   const handleChangePassword = async (payload: ChangePasswordPayload) => {
     setIsLoading(true);
     try {
       await userService.changePassword(payload);
+      alert("Mot de passe modifié !");
+      setActiveTab("profile");
+    } catch {
+      alert("Erreur : Mot de passe actuel incorrect.");
     } finally {
       setIsLoading(false);
     }
   };
- 
-  const handleAvatarUpload = async (file: File) => {
-    setIsLoading(true);
-    try {
-      const { avatarUrl } = await userService.uploadAvatar(file);
-      setUser((prev) => (prev ? { ...prev, avatarUrl } : prev));
-    } finally {
-      setIsLoading(false);
-    }
-  };
- 
-  // ─── Render ───────────────────────────────────────────────────────────────
-  if (pageError) {
+
+  if (pageError)
     return (
-      <div className="container py-5">
+      <div className={styles.pageContainer}>
         <div className="alert alert-danger">{pageError}</div>
       </div>
     );
-  }
- 
-  if (!user) {
+
+  if (!user)
     return (
-      <div className="container py-5 text-center text-muted">
-        <div className="spinner-border spinner-border-sm me-2" />
-        Loading profile…
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
+        Chargement...
       </div>
     );
-  }
- 
+
   return (
-    <div className="container py-4" style={{ maxWidth: 720 }}>
-      <h1 className="h4 fw-bold mb-4">My Account</h1>
- 
-      {/* Avatar always visible at top */}
-      <AvatarUpload
-        currentAvatarUrl={user.avatarUrl}
-        onUpload={handleAvatarUpload}
-        isLoading={isLoading}
-      />
- 
-      {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-4">
-        {(["profile", "security"] as Tab[]).map((tab) => (
-          <li className="nav-item" key={tab}>
-            <button
-              className={`nav-link ${activeTab === tab ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab(tab);
-                setIsEditing(false);
-              }}
-            >
-              {tab === "profile" ? "Profile" : "Security"}
-            </button>
-          </li>
-        ))}
-      </ul>
- 
-      {/* Profile Tab */}
-      {activeTab === "profile" && (
-        <div>
-          {isEditing ? (
+    <div className={styles.pageContainer}>
+      {/* --- La partie AvatarUpload a été supprimée ici --- */}
+
+      <nav className={styles.tabsNav}>
+        <ul className={styles.tabsList}>
+          {(["profile", "security"] as Tab[]).map((tab) => (
+            <li key={tab}>
+              <button
+                className={`${styles.tabButton} ${activeTab === tab ? styles.activeTab : ""}`}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setIsEditing(false);
+                }}
+              >
+                {tab === "profile" ? "📋 Mon Profil" : "🔒 Sécurité"}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <main className={styles.fadeIn}>
+        {activeTab === "profile" &&
+          (isEditing ? (
             <EditProfileForm
               user={user}
               onSubmit={handleUpdateProfile}
@@ -109,14 +105,15 @@ export default function UserProfilePage() {
             />
           ) : (
             <ProfileCard user={user} onEditClick={() => setIsEditing(true)} />
-          )}
-        </div>
-      )}
- 
-      {/* Security Tab */}
-      {activeTab === "security" && (
-        <ChangePasswordForm onSubmit={handleChangePassword} isLoading={isLoading} />
-      )}
+          ))}
+
+        {activeTab === "security" && (
+          <ChangePasswordForm
+            onSubmit={handleChangePassword}
+            isLoading={isLoading}
+          />
+        )}
+      </main>
     </div>
   );
 }

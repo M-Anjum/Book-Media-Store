@@ -36,6 +36,10 @@ public class SpringSecurityConfig {
                                                 .requestMatchers("/api/user/register").permitAll()
                                                 .requestMatchers("/ws-chat/**").permitAll()
                                                 .requestMatchers("/error").permitAll()
+                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                                .requestMatchers("/error").permitAll()
+                                                
+                                                .requestMatchers("/api/**").permitAll()
 
                                                 // 2. Blog: Lecture publique
                                                 .requestMatchers(HttpMethod.GET,

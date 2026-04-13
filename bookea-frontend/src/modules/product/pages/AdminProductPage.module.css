@@ -1,0 +1,111 @@
+.adminWrapper {
+    min-height: 100vh;
+    background-color: var(--bookea-bg); /* #f8fafc */
+    padding: 3rem 1.5rem;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--bookea-black);
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+}
+
+.accent {
+    color: var(--bookea-orange);
+}
+
+.subtitle {
+    color: var(--bookea-text-muted);
+    font-size: 1rem;
+}
+
+/* Onglets (Tabs) */
+.tabsWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+
+.tabsBackground {
+    display: inline-flex;
+    background-color: #e2e8f0; /* Gris clair pour le fond des tabs */
+    padding: 5px;
+    border-radius: 12px;
+    gap: 5px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tabButton {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--bookea-text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tabButton:hover {
+    color: var(--bookea-black);
+}
+
+/* État Actif : On utilise ton Orange Bookea */
+.activeTab {
+    background-color: var(--bookea-orange);
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(232, 82, 10, 0.2);
+}
+
+.icon {
+    font-size: 1.1rem;
+}
+
+/* Animation de transition */
+.contentArea {
+    position: relative;
+}
+
+.fadeIn {
+    animation: fadeInAnimation 0.4s ease-out forwards;
+}
+
+@keyframes fadeInAnimation {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .title {
+        font-size: 1.8rem;
+    }
+    .tabButton {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+    }
+}

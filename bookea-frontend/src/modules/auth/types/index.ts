@@ -1,1 +1,1 @@
-export type { LoginPayload } from "./auth.types";
+export type { LoginPayload, RegisterPayload } from "./auth.types";

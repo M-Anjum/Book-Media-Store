@@ -4,66 +4,93 @@ import { OrderResponse, OrderStatus, Page } from "../../type/types";
 import styles from "./AdminDashboard.module.css";
 
 const AdminDashboard: React.FC = () => {
-  const [data, setData] = useState<Page<OrderResponse> | null>(null);
+  const [page, setPage] = useState<Page<OrderResponse> | null>(null);
 
-  const load = (page = 0) => orderService.getAllOrders(page).then(setData);
+  const load = (p = 0) => {
+    orderService.getAllOrders(p).then(setPage);
+  };
 
   useEffect(() => {
     load();
   }, []);
 
-  const updateStatus = async (id: number, s: string) => {
-    await orderService.updateStatus(id, s as OrderStatus);
-    load(data?.number);
+  const handleStatusChange = async (id: number, status: string) => {
+    await orderService.updateStatus(id, status as OrderStatus);
+    load(page?.number);
   };
 
-  const remove = async (id: number) => {
-    if (confirm("Confirmer la suppression logique ?")) {
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Voulez-vous vraiment supprimer cette commande ?")) {
       await orderService.deleteOrder(id);
-      load(data?.number);
+      load(page?.number);
     }
   };
 
   return (
-    <div className={styles.adminPane}>
-      <h1 className={styles.head}>Gestion des commandes</h1>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Commande</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data?.content.map((order) => (
-            <tr key={order.id}>
-              <td>{order.orderNumber}</td>
-              <td>
-                <select
-                  className={styles.select}
-                  value={order.status}
-                  onChange={(e) => updateStatus(order.id, e.target.value)}
-                >
-                  {Object.values(OrderStatus).map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <button
-                  className={styles.delBtn}
-                  onClick={() => remove(order.id)}
-                >
-                  Supprimer
-                </button>
-              </td>
+    <div className={styles.adminContainer}>
+      <header className={styles.header}>
+        <h1>Gestion des Commandes</h1>
+        <p>Interface d'administration Bookea Store</p>
+      </header>
+
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Statut</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {page?.content.map((order) => (
+              <tr key={order.id}>
+                <td className={styles.orderNumber}>{order.orderNumber}</td>
+                <td>{new Date(order.orderDate).toLocaleDateString()}</td>
+                <td className={styles.price}>{order.totalAmount}€</td>
+                <td>
+                  <select
+                    className={styles.statusSelect}
+                    value={order.status}
+                    onChange={(e) =>
+                      handleStatusChange(order.id, e.target.value)
+                    }
+                  >
+                    {Object.values(OrderStatus).map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <button
+                    className={styles.deleteBtn}
+                    onClick={() => handleDelete(order.id)}
+                  >
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination (Indispensable pour l'admin) */}
+      <div className={styles.pagination}>
+        <button disabled={page?.first} onClick={() => load(page!.number - 1)}>
+          « Précédent
+        </button>
+        <span>
+          Page {page ? page.number + 1 : 0} sur {page?.totalPages}
+        </span>
+        <button disabled={page?.last} onClick={() => load(page!.number + 1)}>
+          Suivant »
+        </button>
+      </div>
     </div>
   );
 };

@@ -1,52 +1,69 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../../order/cart/CartContext";
+import { useAuth } from "../../modules/auth/context/AuthContext";
 import styles from "./Navbar.module.css";
 
 const Navbar: React.FC = () => {
   const { itemCount } = useCart();
+  const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Petit utilitaire pour savoir quelle page est active
   const isActive = (path: string) =>
     location.pathname === path ? styles.active : "";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <nav className={styles.navbar}>
       <div className={styles.logo}>
-        <Link to="/">
-          Bookea<span> Store</span>
-        </Link>
+        <Link to="/">Bookea<span> Store</span></Link>
       </div>
 
       <ul className={styles.navLinks}>
+        <li><Link to="/" className={isActive("/")}>Accueil</Link></li>
+        <li><Link to="/orders/me" className={isActive("/orders/me")}>Mes Commandes</Link></li>
+        {isAuthenticated && (
+          <li><Link to="/profile" className={isActive("/profile")}>Mon Profil</Link></li>
+        )}
         <li>
-          <Link to="/" className={isActive("/")}>
-            Accueil
+          <Link to="/admin/orders" className={`${styles.adminLink} ${isActive("/admin/orders")}`}>
+            Commandes Admin
           </Link>
         </li>
         <li>
-          <Link to="/orders/me" className={isActive("/orders/me")}>
-            Mes Commandes
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/admin/orders"
-            className={`${styles.adminLink} ${isActive("/admin/orders")}`}
-          >
-            Admin
+          <Link to="/admin/add-product" className={`${styles.adminLink} ${isActive("/admin/add-product")}`}>
+            + Ajouter Produit
           </Link>
         </li>
       </ul>
 
       <div className={styles.actions}>
-        <Link to="/cart" className={styles.cartButton}>
-          <span className={styles.cartIcon}>🛒</span>
-          Panier
-          {itemCount > 0 && <span className={styles.badge}>{itemCount}</span>}
-        </Link>
-      </div>
+  {isAuthenticated ? (
+    <button onClick={handleLogout} className={styles.registerButton}>
+      Déconnexion
+    </button>
+  ) : (
+    <>
+      <Link to="/login" className={styles.authLink}>
+        Connexion
+      </Link>
+      <Link to="/register" className={styles.registerButton}>
+        S'inscrire
+      </Link>
+    </>
+  )}
+
+  <Link to="/cart" className={styles.cartButton}>
+  <span className={styles.cartIcon}>🛒</span>
+  <span className={styles.cartText}>Panier</span>
+  {itemCount > 0 && <span className={styles.badge}>{itemCount}</span>}
+</Link>
+</div>
     </nav>
   );
 };

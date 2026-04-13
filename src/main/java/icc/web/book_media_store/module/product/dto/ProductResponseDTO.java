@@ -2,6 +2,8 @@ package icc.web.book_media_store.module.product.dto;
 
 import icc.web.book_media_store.module.product.model.ProductType;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import icc.web.book_media_store.module.product.enums.BookCategory;
