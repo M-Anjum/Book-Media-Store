@@ -38,7 +38,9 @@ public class ChatController {
 				.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 		System.out.println("Message received by server: " + messageDTO.getContent());
 		messageDTO.setRoomId(roomId);
-		messageDTO.setSenderUsername(ANONYMOUS_SENDER);
+		if (messageDTO.getSenderUsername() == null || messageDTO.getSenderUsername().isBlank()) {
+			messageDTO.setSenderUsername(ANONYMOUS_SENDER);
+		}
 		if (messageDTO.getType() == null || messageDTO.getType().isBlank()) {
 			messageDTO.setType(MessageType.CHAT.name());
 		}

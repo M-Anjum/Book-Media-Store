@@ -1,3 +1,3 @@
 export { LoginPage } from "./pages";
 export { authService } from "./services";
-export type { LoginPayload } from "./types";
+export type { LoginPayload, RegisterPayload } from "./types";

@@ -24,7 +24,14 @@ public class WebConfig implements WebMvcConfigurer { // Ajout de l'interface
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+
+        // Autorise ton frontend Vite sur les ports 3000, 3001 et 3003
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:3003"));
+
+        // Autorise les méthodes HTTP nécessaires pour ton Shop et Blog (PATCH = toggle statut, etc.)
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
         config.setAllowCredentials(true);
