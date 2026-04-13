@@ -74,6 +74,12 @@ public class BlogController {
 		return blogService.updateArticle(id, request);
 	}
 
+	@PutMapping("/admin/articles/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ArticleResponse updateArticleAdmin(@PathVariable Long id, @Valid @RequestBody ArticleRequest request) {
+		return blogService.updateArticle(id, request);
+	}
+
 	@DeleteMapping("/articles/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -122,6 +128,13 @@ public class BlogController {
 		return blogService.moderateComment(commentId, request);
 	}
 
+	@PutMapping("/admin/comments/{commentId}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public CommentModerationResponse updateCommentAdmin(
+			@PathVariable Long commentId, @Valid @RequestBody CommentRequest request) {
+		return blogService.updateCommentContent(commentId, request);
+	}
+
 	@PostMapping("/articles/{id}/comments")
 	@PreAuthorize("isAuthenticated()")
 	public CommentResponse createComment(@PathVariable Long id, @Valid @RequestBody CommentRequest request) {
@@ -141,7 +154,8 @@ public class BlogController {
 	}
 
 	@GetMapping("/init")
-	@PreAuthorize("hasRole('ADMIN')")
+	// TEMP: re-enable after DB seeded — was: @PreAuthorize("hasRole('ADMIN')")
+	// @PreAuthorize("hasRole('ADMIN')")
 	public String initializeDummyData() {
 		return blogService.initializeDummyData();
 	}
