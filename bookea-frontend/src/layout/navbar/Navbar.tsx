@@ -82,6 +82,11 @@ const isAdmin = user?.role?.includes("ADMIN");
                   👥 Utilisateurs
                 </Link>
               </li>
+              <li>
+                <Link to="/admin/blog" className={isActive("/admin/blog")}>
+                  📝 Gestion du Blog
+                </Link>
+              </li>
             </ul>
           </li>
         )}
