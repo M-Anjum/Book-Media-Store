@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
   };
 
   // On affiche l'admin seulement si l'utilisateur est ADMIN
-const isAdmin = user?.role?.includes("ADMIN");
+  const isAdmin = user?.role?.includes("ADMIN");
 
   return (
     <nav className={styles.navbar}>
@@ -38,16 +38,6 @@ const isAdmin = user?.role?.includes("ADMIN");
         <li><Link to="/" className={isActive("/")}>Accueil</Link></li>
         <li><Link to="/blog" className={blogNavClass}>Blog</Link></li>
         <li><Link to="/orders/me" className={isActive("/orders/me")}>Mes Commandes</Link></li>
-        <li>
-          <Link to="/" className={isActive("/")}>
-            Accueil
-          </Link>
-        </li>
-        <li>
-          <Link to="/orders/me" className={isActive("/orders/me")}>
-            Mes Commandes
-          </Link>
-        </li>
 
         {isAuthenticated && (
           <li>
