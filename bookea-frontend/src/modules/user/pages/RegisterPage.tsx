@@ -31,6 +31,8 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -106,7 +108,6 @@ export default function RegisterPage() {
     <div style={{ background: "#F5F5F0", minHeight: "100vh", padding: "2rem 1rem" }}>
       <div style={{ maxWidth: 660, margin: "0 auto" }}>
 
-        {/* Logo */}
         <div style={{ fontSize: 22, fontWeight: 600, color: "#E8520A", marginBottom: 4 }}>Bookea</div>
         <div style={{ fontSize: 13, color: "#888", marginBottom: "2rem" }}>Librairie en ligne</div>
         <p style={{ fontSize: 11, color: "#aaa", marginBottom: "1.25rem" }}>
@@ -167,7 +168,20 @@ export default function RegisterPage() {
           {/* ── 4. Mot de passe ─────────────────────── */}
           <Card number={4} title="Mot de passe">
             <Field label="Mot de passe" required error={errors.password}>
-              <input type="password" name="password" value={form.password} onChange={handleChange} placeholder="••••••••" style={input(!!errors.password)} />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  style={{ ...input(!!errors.password), paddingRight: 80 }}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 12 }}>
+                  {showPassword ? "Masquer" : "Afficher"}
+                </button>
+              </div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
                 {["8 car. min.", "1 majuscule", "1 chiffre", "1 spécial"].map((t) => (
                   <span key={t} style={{ fontSize: 11, background: "#FDE8DF", color: "#C94409", padding: "2px 8px", borderRadius: 99 }}>{t}</span>
@@ -175,7 +189,20 @@ export default function RegisterPage() {
               </div>
             </Field>
             <Field label="Confirmation" required error={errors.confirmPassword}>
-              <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" style={input(!!errors.confirmPassword)} />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  style={{ ...input(!!errors.confirmPassword), paddingRight: 80 }}
+                />
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                  style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 12 }}>
+                  {showConfirm ? "Masquer" : "Afficher"}
+                </button>
+              </div>
             </Field>
           </Card>
 
@@ -218,8 +245,6 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
 
 const input = (hasError: boolean): React.CSSProperties => ({
   width: "100%", height: 38, padding: "0 12px",
