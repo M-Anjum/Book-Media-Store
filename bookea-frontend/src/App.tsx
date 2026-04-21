@@ -66,7 +66,7 @@ const App: React.FC = () => {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
-                <Route path="/chat" element={<LiveChat />} />
+                <Route path="/chat" element={<LiveChat variant="page" />} />
 
                 {/* --- ADMIN (layout + rôle ADMIN) --- */}
                 <Route element={<AdminRoute />}>
@@ -92,6 +92,7 @@ const App: React.FC = () => {
             </main>
             <Footer />
           </div>
+          <LiveChat variant="widget" />
         </Router>
       </CartProvider>
     </AuthProvider>

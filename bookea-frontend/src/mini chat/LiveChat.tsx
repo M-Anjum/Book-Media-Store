@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useLocation } from "react-router-dom";
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -44,7 +45,14 @@ function colorForUsername(name: string): string {
   return `hsl(${h}, 72%, 62%)`;
 }
 
-const LiveChat: React.FC = () => {
+export type LiveChatProps = {
+  /** Full page (route `/chat`) vs floating launcher on every screen */
+  variant?: "page" | "widget";
+};
+
+const LiveChat: React.FC<LiveChatProps> = ({ variant = "page" }) => {
+  const location = useLocation();
+  const [widgetOpen, setWidgetOpen] = useState(false);
   const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem(AUTH_KEY)
   );
@@ -248,11 +256,78 @@ const LiveChat: React.FC = () => {
     flexShrink: 0,
   });
 
-  return (
-    <div style={shell}>
-      <div style={panel}>
-        <div style={header}>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>LIVE CHAT</span>
+  if (variant === "widget" && location.pathname === "/chat") {
+    return null;
+  }
+
+  const effectivePanel: React.CSSProperties = {
+    ...panel,
+    ...(variant === "widget"
+      ? {
+          maxHeight: "min(520px, calc(100vh - 100px))",
+          width: "min(380px, calc(100vw - 40px))",
+        }
+      : {}),
+  };
+
+  const widgetRoot: React.CSSProperties = {
+    position: "fixed",
+    right: 20,
+    bottom: 20,
+    zIndex: 10050,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 12,
+  };
+
+  const fab: React.CSSProperties = {
+    width: 56,
+    height: 56,
+    borderRadius: "50%",
+    border: "none",
+    backgroundColor: "#f97316",
+    color: "#fff",
+    fontSize: 22,
+    lineHeight: 1,
+    cursor: "pointer",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.35)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  const closeChatBtn: React.CSSProperties = {
+    marginRight: 6,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    border: "1px solid #3d3d44",
+    backgroundColor: "#2d2d32",
+    color: "#efeff1",
+    fontSize: 20,
+    lineHeight: 1,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  };
+
+  const chatPanel = (
+    <div style={effectivePanel}>
+      <div style={header}>
+        {variant === "widget" && (
+          <button
+            type="button"
+            onClick={() => setWidgetOpen(false)}
+            style={closeChatBtn}
+            aria-label="Fermer le chat"
+          >
+            ×
+          </button>
+        )}
+        <span style={{ fontWeight: 700, fontSize: 15 }}>LIVE CHAT</span>
           <span style={badgeLive}>EN DIRECT</span>
           <span
             style={{
@@ -389,8 +464,30 @@ const LiveChat: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+    </div>
+  );
 
+  return (
+    <>
+      {variant === "page" ? (
+        <div style={shell}>{chatPanel}</div>
+      ) : (
+        <div style={widgetRoot}>
+          {!widgetOpen ? (
+            <button
+              type="button"
+              style={fab}
+              onClick={() => setWidgetOpen(true)}
+              aria-label="Ouvrir le chat live"
+              aria-expanded={widgetOpen}
+            >
+              💬
+            </button>
+          ) : (
+            chatPanel
+          )}
+        </div>
+      )}
       {showLogin && (
         <div
           style={{
@@ -400,7 +497,7 @@ const LiveChat: React.FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 1000,
+            zIndex: 11000,
             padding: 16,
           }}
           onClick={() => !loginLoading && setShowLogin(false)}
@@ -484,7 +581,7 @@ const LiveChat: React.FC = () => {
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
